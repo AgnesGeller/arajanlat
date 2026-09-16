@@ -35,6 +35,7 @@ create table if not exists public.quote_plants (
  package text, category text, purchase_net numeric(14,2), sale_net numeric(14,2), active boolean not null default true,
  price_date date, created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
+create unique index if not exists quote_plants_sku_uq on public.quote_plants(sku);
 create table if not exists public.quote_price_components (
  id uuid primary key default gen_random_uuid(), catalog_id uuid not null references public.quote_price_catalog(id) on delete cascade,
  position integer not null, name text, quantity numeric(14,4), unit text,
