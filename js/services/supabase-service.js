@@ -1,7 +1,7 @@
 import { SUPABASE_URL, SUPABASE_KEY } from '../config.js';
 export const configured = Boolean(SUPABASE_URL && SUPABASE_KEY && window.supabase?.createClient);
 export const db = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
+  auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: false }
 }) : null;
 export async function rows(table, query = x => x.select('*')) {
   const { data, error } = await query(db.from(table));
