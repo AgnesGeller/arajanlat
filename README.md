@@ -49,3 +49,9 @@ A `KASSZA_SERVICE_ROLE_KEY` kizárólag az Árajánlatot kiszolgáló projekt Ed
 Többcímű ügyfelek: minden munkavégzési cím külön sorban marad. Címeltérésnél az „Összes cím megtartása” választás összeilleszti a két listát; kizárólag azonos, kis/nagybetűre és fölösleges szóközre normalizált címeket egyesít. Ügyfélbejegyzések kézi összekapcsolásakor mindkét bejegyzés címei megmaradnak. A kiegészítő migráció: `quote_customer_addresses.sql`.
 
 Forráselsőbbség: `quote_customer_source_priority.sql`. A módosítás csak az Árajánlat összevetési függvényét érinti; a közös forrásba a korábbi eltérések rendezése nem ír adatot.
+
+## Telepítés és ügyféldokumentumok
+
+Az App letöltése gomb Androidon, Android-tableten és asztali Chrome/Edge böngészőben a böngésző telepítési ajánlatakor jelenik meg. Telepített módban és igazolt telepítés után rejtve marad; a helyi telepítési jelző csak felületi beállítás. Új telepítési ajánlat esetén az eltávolított app újra telepíthető. A telepített app élő üzleti adataihoz továbbra is internetkapcsolat szükséges.
+
+Az assets/diszkertek-logo.png a felhasználó saját logója. Az ügyféloldal és az adminból nyomtatott/PDF-be mentett ajánlat ezt használja; a belső app ikonja változatlan. Minden későbbi, ügyfélnek küldendő dokumentumon ezt a logót kell használni.

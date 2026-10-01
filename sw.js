@@ -1,5 +1,5 @@
-const CACHE='diszkertek-shell-v14';
-const STATIC=['./','./index.html','./client.html','./css/app.css','./js/app.js?v=14','./js/client.js','./js/config.js','./js/services/supabase-service.js','./js/services/email-service.js','./js/modules/quote-calculator.js','./assets/icon.svg','./assets/icon-192.png','./assets/icon-512.png'];
+const CACHE='diszkertek-shell-v15';
+const STATIC=['./','./index.html','./client.html','./css/app.css','./js/app.js?v=15','./js/modules/app-install.js','./js/client.js','./js/config.js','./js/services/supabase-service.js','./js/services/email-service.js','./js/modules/quote-calculator.js','./assets/diszkertek-logo.png','./assets/icon.svg','./assets/icon-192.png','./assets/icon-512.png'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(STATIC.map(path=>new Request(path,{cache:'reload'}))))));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k!==CACHE).map(k=>caches.delete(k))))));
 self.addEventListener('fetch', event => {
