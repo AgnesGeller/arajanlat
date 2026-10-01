@@ -54,4 +54,6 @@ Forráselsőbbség: `quote_customer_source_priority.sql`. A módosítás csak az
 
 Az App letöltése gomb Androidon, Android-tableten és asztali Chrome/Edge böngészőben a böngésző telepítési ajánlatakor jelenik meg. Telepített módban és igazolt telepítés után rejtve marad; a helyi telepítési jelző csak felületi beállítás. Új telepítési ajánlat esetén az eltávolított app újra telepíthető. A telepített app élő üzleti adataihoz továbbra is internetkapcsolat szükséges.
 
-Az assets/diszkertek-logo.png a felhasználó saját logója. Az ügyféloldal és az adminból nyomtatott/PDF-be mentett ajánlat ezt használja; a belső app ikonja változatlan. Minden későbbi, ügyfélnek küldendő dokumentumon ezt a logót kell használni.
+Az assets/diszkertek-logo.png a felhasználó saját logója. Az ügyféloldal és az adminból nyomtatott/PDF-be mentett ajánlat ezt használja; a belső app saját Á pecsétikont használ. Minden későbbi, ügyfélnek küldendő dokumentumon ezt a logót kell használni.
+
+Jóváhagyott Á arculat: az appikonok, favicon és linkmegosztási előnézet az olajzöld–homok pecsétmintából készülnek. Forrás: assets/arajanlat-seal.png. A manifest külön 192/512 px és biztonságos szegélyű maskable ikont használ; a megosztási kép 1200×630 px PNG, abszolút HTTPS metaadatokkal. Az ügyfélanyagok Díszkertek logója ettől különálló.
