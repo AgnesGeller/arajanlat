@@ -41,13 +41,8 @@ begin
  r=jsonb_set(r,'{details,phone}','"+36701234567"');
  perform public.quote_customers_reconcile(company,jsonb_build_array(r));
  select * into c from public.quote_clients where id=c.id;
- if not(c.sync_conflicts ? 'phone') or c.phone<>'+36201234567' then raise exception 'Local conflicting value lost';end if;
- if exists(select 1 from jsonb_array_elements(public.quote_customers_pending(company)) x where x->>'id'=c.id::text) then raise exception 'Conflict sent to source worker';end if;
- perform public.quote_customer_resolve(c.id,'{"phone":"source"}');
- perform public.quote_customers_reconcile(company,jsonb_build_array(r));
- select * into c from public.quote_clients where id=c.id;
- if c.phone<>'+36701234567' or c.sync_conflicts<>'{}'::jsonb then raise exception 'Resolution not applied';end if;
- if exists(select 1 from public.quote_customer_sync where client_id=c.id and synced_at is null) then raise exception 'Clean queue not cleared';end if;
+ if c.sync_conflicts<>'{}'::jsonb or c.phone<>'+36701234567' then raise exception 'Current source not authoritative';end if;
+ if exists(select 1 from public.quote_customer_sync where client_id=c.id and synced_at is null) then raise exception 'Source priority queued stale edit';end if;
  if not exists(select 1 from public.quote_customer_history where client_id=c.id) then raise exception 'History missing';end if;
  if exists(select 1 from public.clients where id=c.id) then raise exception 'Legacy shared table modified';end if;
  if not public.quote_customer_sync_lease(company,lease_a) then raise exception 'Lease not acquired';end if;
@@ -55,5 +50,5 @@ begin
  perform public.quote_customer_sync_lease(company,lease_a,true);
  if not public.quote_customer_sync_lease(company,lease_b) then raise exception 'Lease not released';end if;
 end $test$;
-select 'PASS: bidirectional merge, formatting, conflict preservation/resolution, queue, history, stale writes and lease' result;
+select 'PASS: bidirectional merge, formatting, source priority, queue, history, stale writes and lease' result;
 rollback;

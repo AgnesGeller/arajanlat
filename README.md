@@ -38,7 +38,7 @@ A `quote-customer-sync` Edge Function érvényes saját Auth sessiont és `quote
 
 Frissítés történik belépéskor, ügyfélmentéskor, az alkalmazás újbóli előtérbe kerülésekor, látható ablakban kétpercenként, illetve az Ügyféllista frissítése gombbal. A többi alkalmazás új ügyfelei is átkerülnek az Árajánlatba, ha aktívak és jóváhagyottak. Inaktív vagy függőben lévő ügyfelet nem aktivál automatikusan.
 
-A mezőnkénti összevetés megőrzi az eredeti adatot és az utolsó közös állapotot. Egymástól független változtatások összeolvadnak; eltérő módosításoknál az Árajánlat választást kér. 42 korábbi ügyfélnél eltérés maradt, főként címekben. Ezek az „Eltérő adatok ellenőrzése” szűrővel és az „Eltérő adatok ellenőrzése” művelettel rendezhetők. Feloldatlan eltérést a rendszer nem küld a közös forrásba. Az előzményeket a `quote_customer_history` és a `legacy_payload` őrzi.
+A mezőnkénti összevetés megőrzi az eredeti adatot és az utolsó közös állapotot. Egymástól független új változtatások összeolvadnak. A felhasználó döntése alapján adateltérés esetén a Munkalap aktuális közös törzse az elsődleges: a teljes közös címjegyzék és a többi közös mező kerül az Árajánlatba. A régi 42 eltérés a frissen lekért közös adatokkal rendezve; ezek nem írhatják felül a közös törzset. Az előzményeket a `quote_customer_history` és a `legacy_payload` őrzi.
 
 A szerver tartós adatbázisos sorral, párhuzamos futást kizáró foglalással, valamint a közös rekord módosítási időpontját ellenőrző írásokkal dolgozik. Sikertelen szinkronnál a saját mentés megmarad és később újrapróbálható. Ügyféladat nem kerül localStorage-ba, nyilvános repositoryba vagy naplóba.
 
@@ -47,3 +47,5 @@ A `KASSZA_SERVICE_ROLE_KEY` kizárólag az Árajánlatot kiszolgáló projekt Ed
 Új telepítésnél: eredeti séma és Auth-elkülönítés, `quote_own_clients.sql`, kezdeti közös import, `quote_customer_sync.sql`, végül `quote_common_customers.sql`. A régi migrációkat működő környezetben nem szabad újrafuttatni. A tranzakcióban futó `supabase/tests/quote_common_customers.sql` visszagörgethető tesztekkel ellenőrzi az összeolvasztást, formátumegyezéseket, eltérések megőrzését és feloldását, a mentési sort, előzményeket, elavult mentések elutasítását és a párhuzamos futás kizárását. A teszt nem ír a Kassza projektbe.
 
 Többcímű ügyfelek: minden munkavégzési cím külön sorban marad. Címeltérésnél az „Összes cím megtartása” választás összeilleszti a két listát; kizárólag azonos, kis/nagybetűre és fölösleges szóközre normalizált címeket egyesít. Ügyfélbejegyzések kézi összekapcsolásakor mindkét bejegyzés címei megmaradnak. A kiegészítő migráció: `quote_customer_addresses.sql`.
+
+Forráselsőbbség: `quote_customer_source_priority.sql`. A módosítás csak az Árajánlat összevetési függvényét érinti; a közös forrásba a korábbi eltérések rendezése nem ír adatot.

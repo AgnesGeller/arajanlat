@@ -114,7 +114,7 @@ for each row execute function quote_private.queue_new_customer();
 -- Only the quote worker's service_role can accept source snapshots.
 create function public.quote_customers_reconcile(p_company uuid,p_customers jsonb) returns integer
 language plpgsql security invoker set search_path='' as $$
-declare r jsonb; c public.quote_clients; fields jsonb; m jsonb; f jsonb; n integer=0;
+declare r jsonb; c public.quote_clients; fields jsonb; m jsonb; f jsonb; k text; n integer=0;
  previous_skip text=current_setting('quote.skip_customer_queue',true);
 begin
  if not exists(select 1 from public.quote_staff where company_id=p_company) then raise exception 'Unknown quote company';end if;
@@ -136,6 +136,11 @@ begin
      where (x->>'active')::boolean and x->>'review_status'='approved' and btrim(x->>'address')<>'') s));
   m=quote_private.merge_customer_fields(quote_private.customer_fields(c),c.sync_base,fields,c.sync_conflicts);
   f=m->'fields';
+  -- The current Munkalap customer master wins whenever the copies disagree.
+  for k in select jsonb_object_keys(m->'conflicts') loop
+   f=jsonb_set(f,array[k],fields->k);
+  end loop;
+  m=jsonb_set(m,'{conflicts}','{}'::jsonb);
   if quote_private.customer_fields(c) is distinct from f or c.sync_base is distinct from fields
    or c.source_payload is distinct from r or c.sync_conflicts is distinct from m->'conflicts'
    or c.is_active is distinct from ((r->>'active')::boolean and r->>'review_status'='approved') then
