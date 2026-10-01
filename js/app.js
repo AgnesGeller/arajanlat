@@ -16,7 +16,7 @@ function field(name,label,value='',type='text',required=false){return `<label>${
 function area(name,label,value=''){return `<label>${label}<textarea name="${name}">${esc(value)}</textarea></label>`}
 async function init(){if(!configured){$('#setup').hidden=false;return}selectAccount(localStorage.getItem('quote_last_account'));const {data:{session}}=await db.auth.getSession();await authState(session);db.auth.onAuthStateChange((_event,nextSession)=>{setTimeout(()=>authState(nextSession).catch(fail),0)})}
 async function authState(session){state.session=session;const account=Object.entries(STAFF_ACCOUNTS).find(([,value])=>value.email.toLowerCase()===session?.user?.email?.toLowerCase());$('#login').hidden=Boolean(account);$('#workspace').hidden=true;$('#nav').hidden=true;if(!account){if(session)status('Ehhez a fiókhoz nincs árajánlatkészítői hozzáférés.',true);return}selectAccount(account[0]);localStorage.setItem('quote_last_account',account[0]);
- try{const staff=await rows('quote_staff',q=>q.select('user_id,company_id').eq('user_id',session.user.id).limit(1));if(!staff[0]?.company_id){$('#login').hidden=false;status('Ehhez a fiókhoz nincs árajánlatkészítői hozzáférés.',true);return}state.companyId=staff[0].company_id;$('#workspace').hidden=false;$('#nav').hidden=false;status('');await refresh();if(state.syncQueue.length){const message=await syncCustomers();await refresh();if(message)status(message)}}catch(error){$('#login').hidden=false;fail(error)}}
+ try{const staff=await rows('quote_staff',q=>q.select('user_id,company_id').eq('user_id',session.user.id).limit(1));if(!staff[0]?.company_id){$('#login').hidden=false;status('Ehhez a fiókhoz nincs árajánlatkészítői hozzáférés.',true);return}state.companyId=staff[0].company_id;$('#workspace').hidden=false;$('#nav').hidden=false;status('');await refresh();const message=await syncCustomers();await refresh();if(message)status(message)}catch(error){$('#login').hidden=false;fail(error)}}
 function selectAccount(key){if(!STAFF_ACCOUNTS[key])return;state.selectedAccount=key;document.querySelectorAll('[data-account]').forEach(button=>{const active=button.dataset.account===key;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active))})}
 document.querySelectorAll('[data-account]').forEach(button=>button.onclick=()=>{selectAccount(button.dataset.account);localStorage.setItem('quote_last_account',button.dataset.account);$('#login-help').textContent=`${STAFF_ACCOUNTS[button.dataset.account].name} kiválasztva. A sikeres belépést ez az eszköz megjegyzi.`});
 $('#login-form').onsubmit=async event=>{event.preventDefault();const pin=new FormData(event.target).get('pin');if(!state.selectedAccount){status('Válaszd ki a neved.',true);return}const button=event.target.querySelector('button.primary');button.disabled=true;try{const {error}=await db.auth.signInWithPassword({email:STAFF_ACCOUNTS[state.selectedAccount].email,password:pin});if(error){status('Hibás PIN-kód vagy sikertelen belépés. Próbáld újra.',true);return}localStorage.setItem('quote_last_account',state.selectedAccount);event.target.reset()}catch(error){fail(error)}finally{button.disabled=false}};
@@ -35,22 +35,73 @@ async function refresh(){
 }
 let syncRunning=false;
 async function syncCustomers(){
- if(syncRunning||!state.syncQueue?.length)return '';
+ if(syncRunning||!state.session)return '';
  syncRunning=true;
- try{const {data,error}=await db.functions.invoke('quote-customer-sync',{body:{}});
-  if(error)return 'Ügyfél mentve. A neve még nem került be a Kassza és a Munkalap közös listájába.';
-  return data.failed?'Ügyfelek mentve. Néhány név még nem került be a Kassza és a Munkalap közös listájába.':'Ügyfél mentve. A neve a Kassza és a Munkalap közös listájában is szerepel.';
- }catch{return 'Ügyfél mentve. A neve még nem került be a Kassza és a Munkalap közös listájába.'}finally{syncRunning=false}
+ try{
+  const {data,error}=await db.functions.invoke('quote-customer-sync',{body:{}});
+  if(error)return 'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.';
+  if(data.busy)return 'Az ügyféllista frissítése már folyamatban van.';
+  if(data.failed||data.pending)return 'A közös ügyféllista frissült. Néhány ügyfélnél még ellenőrizni kell az adatokat.';
+  return data.imported||data.synced?'A közös ügyféllista frissült.':'';
+ }catch{return 'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.'}finally{syncRunning=false}
 }
-function renderCustomers(){const search=$('#customer-search').value.toLocaleLowerCase('hu-HU');const found=state.customers.filter(c=>[c.name,c.contact_name,c.phone,c.email,c.billing_address,c.project_address].some(x=>String(x||'').toLocaleLowerCase('hu-HU').includes(search)));
- $('#customers-list').innerHTML=found.length?found.map(c=>`<button class="list-row" data-customer="${c.id}"><span><strong>${esc(c.name)}</strong><small>${esc(c.email||'')} · ${esc(c.phone||'')}</small></span><span>Megnyitás →</span></button>`).join(''):'<p class="muted">Nincs találat.</p>';
+async function refreshCommonCustomers(silent=false){
+ if(!state.session||syncRunning||$('#form-dialog').open)return;
+ const button=$('#sync-customers');button.disabled=true;
+ try{
+  if(!silent)status('Ügyféllista frissítése…');
+  const message=await syncCustomers();await refresh();
+  if(state.customer){const current=state.customers.find(c=>c.id===state.customer.id);if(current)await openCustomer(current.id)}
+  if(message||!silent)status(message||'Az ügyféllista naprakész.');
+ }catch(e){if(!silent)fail(e)}finally{button.disabled=false}
+}
+$('#sync-customers').onclick=()=>refreshCommonCustomers();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCommonCustomers(true)});
+window.addEventListener('online',()=>refreshCommonCustomers(true));
+setInterval(()=>{if(!document.hidden)refreshCommonCustomers(true)},120000);
+function renderCustomers(){const search=$('#customer-search').value.toLocaleLowerCase('hu-HU');const group=$('#customer-filter').value;const found=state.customers.filter(c=>(group==='all'||group==='common'&&(c.source_customer_id||c.shared_sync_enabled)||group==='legacy'&&!c.source_customer_id&&!c.shared_sync_enabled||group==='conflicts'&&Object.keys(c.sync_conflicts||{}).length)&&[c.name,c.contact_name,c.phone,c.email,c.billing_address,c.project_address].some(x=>String(x||'').toLocaleLowerCase('hu-HU').includes(search)));
+ $('#customers-list').innerHTML=found.length?found.map(c=>`<button class="list-row" data-customer="${c.id}"><span><strong>${esc(c.name)}</strong>${Object.keys(c.sync_conflicts||{}).length?'<small class="price-warning">Eltérő adatok ellenőrzése szükséges</small>':''}<small>${esc(c.email||'')} · ${esc(c.phone||'')}</small></span><span>Megnyitás →</span></button>`).join(''):'<p class="muted">Nincs találat.</p>';
  document.querySelectorAll('[data-customer]').forEach(b=>b.onclick=()=>openCustomer(b.dataset.customer));}
-$('#customer-search').oninput=renderCustomers;
+$('#customer-search').oninput=renderCustomers;$('#customer-filter').onchange=renderCustomers;
 $('#new-customer').onclick=()=>editCustomer();
-function editCustomer(c={}){formDialog(c.id?'Ügyfél szerkesztése':'Új ügyfél',`<label>Típus<select name="client_type"><option value="person" ${c.client_type==='person'?'selected':''}>Magánszemély</option><option value="company" ${c.client_type==='company'?'selected':''}>Cég</option></select></label><div class="grid">${field('name','Név / cégnév',c.name,'text',true)}${field('contact_name','Kapcsolattartó',c.contact_name)}${field('phone','Telefon',c.phone,'tel')}${field('email','Email',c.email,'email')}${field('billing_address','Számlázási cím',c.billing_address)}${field('project_address','Munkavégzés címe',c.project_address)}</div>${area('notes','Megjegyzés',c.notes)}`,async data=>{const saved=await rpc('quote_clients_upsert',{p_id:c.id||null,p_name:data.name,p_client_type:data.client_type,p_contact_name:data.contact_name,p_phone:data.phone,p_email:data.email,p_billing_address:data.billing_address,p_project_address:data.project_address,p_notes:data.notes});await refresh();const message=await syncCustomers();await refresh();await openCustomer(saved.id);return message})}
+function editCustomer(c={}){
+ const rawType=c.client_type==='person'?'Magánszemély':c.client_type==='company'?'Cég':c.client_type||'';
+ const types=['','Magánszemély','Cég'];
+ if(rawType&&!types.includes(rawType))types.push(rawType);
+ const options=types.map(t=>'<option value="'+esc(t)+'" '+(t===rawType?'selected':'')+'>'+esc(t||'Nincs megadva')+'</option>').join('');
+ const sharing=c.source_customer_id?'<p class="muted">A név, elérhetőségek, munkacímek és megjegyzés a közös ügyféltörzs része.</p>':'<label class="check-label"><input name="share" type="checkbox" '+(c.shared_sync_enabled!==false?'checked':'')+'> Felvétel a Kassza és Munkalap közös ügyféllistájába</label>';
+ const fields='<label>Típus<select name="client_type">'+options+'</select></label><div class="grid">'+field('name','Név / cégnév',c.name,'text',true)+field('contact_name','Kapcsolattartó',c.contact_name)+field('phone','Telefon',c.phone,'tel')+field('email','Email',c.email,'email')+field('billing_address','Számlázási cím – Árajánlat',c.billing_address)+'</div>'+area('project_address','Munkavégzés címei (címenként külön sor)',c.project_address)+area('notes','Közös ügyfélmegjegyzés',c.notes)+sharing;
+ formDialog(c.id?'Ügyfél szerkesztése':'Új ügyfél',fields,async data=>{
+  const saved=await rpc('quote_clients_upsert',{p_id:c.id||null,p_name:data.name,p_client_type:data.client_type,p_contact_name:data.contact_name,p_phone:data.phone,p_email:data.email,p_billing_address:data.billing_address,p_project_address:data.project_address,p_notes:data.notes,p_share:Boolean(c.source_customer_id||data.share),p_expected_revision:c.sync_revision??null});
+  await refresh();const message=await syncCustomers();await refresh();await openCustomer(saved.id);return message;
+ });
+}
+const sharedFieldLabels={name:'Név',client_type:'Típus',contact_name:'Kapcsolattartó',phone:'Telefon',email:'Email',tax_number:'Adószám',project_address:'Munkavégzés címei',notes:'Megjegyzés'};
+function resolveCustomer(c){
+ const fields='<p>Válaszd ki mezőnként, melyik érték maradjon meg mindhárom alkalmazásban.</p>'+Object.entries(c.sync_conflicts||{}).map(([key,v])=>'<section class="conflict-row"><h3>'+esc(sharedFieldLabels[key]||key)+'</h3><p><strong>Árajánlat:</strong><br>'+esc(v.local||'Nincs megadva')+'</p><p><strong>Közös törzs:</strong><br>'+esc(v.source||'Nincs megadva')+'</p><label>Megtartandó érték<select name="'+esc(key)+'" required><option value="">Válassz…</option><option value="source">Közös törzs értéke</option><option value="local">Árajánlat értéke</option></select></label></section>').join('');
+ formDialog('Eltérő ügyféladatok',fields,async choices=>{
+  await rpc('quote_customer_resolve',{p_id:c.id,p_choices:choices});
+  const message=await syncCustomers();await refresh();await openCustomer(c.id);return message;
+ });
+}
+function linkCustomer(c){
+ const options=state.customers.filter(x=>x.id!==c.id&&x.source_customer_id&&x.is_active).map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('');
+ formDialog('Meglévő közös ügyfélhez kapcsolás','<p><strong>'+esc(c.name)+'</strong> meglévő projektjei az alább választott ügyfélhez kerülnek. A régi ügyféladatokat megőrizzük.</p><label>Közös ügyfél<select name="target" required><option value="">Válassz ügyfelet…</option>'+options+'</select></label>',async data=>{
+  const target=await rpc('quote_customer_link',{p_id:c.id,p_target:data.target});
+  const message=await syncCustomers();await refresh();await openCustomer(target);return message;
+ });
+}
+function customerSyncHtml(c,pending){
+ let html=c.source_customer_id?'<p class="muted">A közös ügyféltörzshöz kapcsolódik.</p>':c.shared_sync_enabled?'<p class="muted">A közös ügyféltörzsbe történő felvétel folyamatban van.</p>':'<p class="muted">Korábbi saját ügyfél. Szerkesztéskor felvehető a közös törzsbe, vagy meglévő közös ügyfélhez kapcsolható.</p>';
+ if(!c.is_active)html+='<p class="price-warning">A közös törzsben inaktív vagy jóváhagyásra vár.</p>';
+ if(pending)html+='<p class="muted">'+esc(pending.last_error||'Az ügyfél itt mentve van. A közös ügyféltörzs frissítése még folyamatban van.')+'</p>';
+ if(Object.keys(c.sync_conflicts||{}).length)html+='<button id="resolve-customer" class="secondary">Eltérő adatok ellenőrzése</button>';
+ if(!c.source_customer_id)html+='<button id="link-customer" class="secondary">Meglévő közös ügyfélhez kapcsolás</button>';
+ return html;
+}
 async function openCustomer(id){state.customer=state.customers.find(c=>c.id===id);const c=state.customer;const pending=state.syncQueue?.find(x=>x.client_id===id);$('#customer-detail').hidden=false;const projects=state.projects.filter(p=>p.client_id===id);
- $('#customer-detail').innerHTML=`<div class="detail-head"><div><p class="eyebrow">ÜGYFÉL</p><h2>${esc(c.name)}</h2><p class="muted">${esc(c.email||'')} · ${esc(c.phone||'')}</p></div><div class="toolbar"><button id="edit-customer" class="secondary">Szerkesztés</button><button id="new-project" class="primary">+ Új projekt</button></div></div>${pending?`<p class="muted">${esc(pending.last_error||'Az ügyfél itt már használható. A neve még nem került be a Kassza és a Munkalap közös listájába.')}</p>`:''}<h3>Projektek</h3><div class="list">${projects.map(p=>`<button class="list-row" data-project="${p.id}"><span><strong>${esc(p.name)}</strong><small>${esc(p.status)} · ${esc(p.work_address||'')}</small></span><span>Megnyitás →</span></button>`).join('')||'<p class="muted">Még nincs projekt.</p>'}</div><div id="project-detail"></div>`;
- $('#edit-customer').onclick=()=>editCustomer(c);$('#new-project').onclick=()=>editProject();document.querySelectorAll('[data-project]').forEach(b=>b.onclick=()=>openProject(b.dataset.project));}
+ $('#customer-detail').innerHTML=`<div class="detail-head"><div><p class="eyebrow">ÜGYFÉL</p><h2>${esc(c.name)}</h2><p class="muted">${esc(c.email||'')} · ${esc(c.phone||'')}</p></div><div class="toolbar"><button id="edit-customer" class="secondary">Szerkesztés</button><button id="new-project" class="primary">+ Új projekt</button></div></div>${customerSyncHtml(c,pending)}<h3>Projektek</h3><div class="list">${projects.map(p=>`<button class="list-row" data-project="${p.id}"><span><strong>${esc(p.name)}</strong><small>${esc(p.status)} · ${esc(p.work_address||'')}</small></span><span>Megnyitás →</span></button>`).join('')||'<p class="muted">Még nincs projekt.</p>'}</div><div id="project-detail"></div>`;
+ $('#edit-customer').onclick=()=>editCustomer(c);if($('#resolve-customer'))$('#resolve-customer').onclick=()=>resolveCustomer(c);if($('#link-customer'))$('#link-customer').onclick=()=>linkCustomer(c);$('#new-project').onclick=()=>editProject();document.querySelectorAll('[data-project]').forEach(b=>b.onclick=()=>openProject(b.dataset.project));}
 function editProject(p={}){formDialog(p.id?'Projekt szerkesztése':'Új projekt',`${field('name','Projekt neve',p.name,'text',true)}${field('work_address','Munkavégzés címe',p.work_address||state.customer?.project_address)}<label>Státusz<select name="status">${['Új érdeklődés','Adatbekérő kiküldve','Ügyfél kitöltötte','Felmérés szükséges','Felmérve','Árajánlat készül','Árajánlat elküldve','Módosítás alatt','Elfogadva','Elutasítva','Lezárva'].map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}</select></label>${area('description','Rövid leírás',p.description)}${area('internal_notes','Belső megjegyzés',p.internal_notes)}${area('client_notes','Ügyfél megjegyzése',p.client_notes)}`,async data=>{const project=await save('quote_projects',{...data,client_id:state.customer.id,...(p.id?{id:p.id}:{})});if(!p.id)await db.from('quote_timeline').insert({project_id:project.id,event:'Projekt létrehozva'});await refresh();await openCustomer(state.customer.id);await openProject(project.id)})}
 function requestHtml(request){const a=request.answers||{};const labels={name:'Név',email:'Email',phone:'Telefon',work_address:'Helyszín',work_type:'Munka típusa',description:'Leírás',area_m2:'Terület (m²)',length_fm:'Hosszúság (fm)',width_m:'Szélesség (m)',count:'Darabszám',gate_cm:'Kapuszélesség (cm)',machine_access:'Géppel megközelíthető',water:'Víz',power:'Áram',access_note:'Megközelítés',note:'Megjegyzés'};const entries=Object.entries(labels).filter(([key])=>a[key]!==null&&a[key]!==undefined&&a[key]!=='').map(([key,label])=>`<div><dt>${label}</dt><dd>${esc(({yes:'Igen',no:'Nem'})[a[key]]||a[key])}</dd></div>`).join('');const files=Array.isArray(a.files)?a.files:[];return `<details><summary>${dateTime(request.submitted_at)} · ${esc(a.name||'Ügyfél válasza')}</summary><dl>${entries}</dl>${files.length?`<h4>Jelzett dokumentumok</h4><ul>${files.map(f=>`<li>${esc(f.name)} · ${esc(f.type||'ismeretlen típus')}</li>`).join('')}</ul>`:''}</details>`}
 async function openProject(id){state.project=state.projects.find(p=>p.id===id);const p=state.project;const quotes=state.quotes.filter(q=>q.project_id===id);const [timeline,clientRequests,receivedFiles]=await Promise.all([rows('quote_timeline',q=>q.select('*').eq('project_id',id).order('occurred_at',{ascending:false})),rows('quote_client_requests',q=>q.select('*').eq('project_id',id).order('submitted_at',{ascending:false})),rows('quote_received_files',q=>q.select('*').eq('project_id',id).order('received_at',{ascending:false}))]);
