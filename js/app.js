@@ -23,7 +23,7 @@ document.querySelectorAll('[data-account]').forEach(button=>button.onclick=()=>{
 $('#login-form').onsubmit=async event=>{event.preventDefault();const pin=new FormData(event.target).get('pin');if(!state.selectedAccount){status('Válaszd ki a neved.',true);return}const button=event.target.querySelector('button.primary');button.disabled=true;try{const {error}=await db.auth.signInWithPassword({email:STAFF_ACCOUNTS[state.selectedAccount].email,password:pin});if(error){status('Hibás PIN-kód vagy sikertelen belépés. Próbáld újra.',true);return}localStorage.setItem('quote_last_account',state.selectedAccount);event.target.reset()}catch(error){fail(error)}finally{button.disabled=false}};
 $('#signout').onclick=async()=>{await db.auth.signOut();state.companyId=null;await authState(null)};
 document.querySelectorAll('[data-view]').forEach(button=>button.onclick=()=>showView(button.dataset.view));
-function showView(view){$('#customers-view').hidden=view!=='customers';$('#quotes-view').hidden=view!=='quotes';document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===view))}
+function showView(view){$('#customers-view').hidden=view!=='customers';$('#quotes-view').hidden=view!=='quotes';$('#projects-view').hidden=view!=='projects';document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===view))}
 async function refresh(){
  [state.customers,state.projects,state.quotes,state.catalog,state.templates,state.syncQueue]=await Promise.all([
  rpc('quote_clients_list',{}),
@@ -32,7 +32,7 @@ async function refresh(){
  rows('quote_price_catalog',q=>q.select('*').eq('active',true).order('source_row')),
  rows('quote_templates',q=>q.select('*').order('name')),
  rows('quote_customer_sync',q=>q.select('client_id,last_error').is('synced_at',null))]);
- renderCustomers();renderQuotes();
+ renderCustomers();renderProjects();renderQuotes();
 }
 let syncRunning=false;
 async function syncCustomers(){
@@ -110,6 +110,10 @@ async function openProject(id){state.project=state.projects.find(p=>p.id===id);c
  $('#edit-project').onclick=()=>editProject(p);$('#new-quote').onclick=()=>newQuote(p);$('#request-link').onclick=()=>createToken(p.id,null,'request');$('#survey-note').onclick=()=>formDialog('Felmérési jegyzet',`${area('note','Megjegyzés')}<label>Időpont<input type="datetime-local" name="occurred_at" required></label>`,async d=>{await save('quote_timeline',{project_id:p.id,event:'Helyszíni felmérés',note:d.note,occurred_at:new Date(d.occurred_at).toISOString()});await openProject(p.id)});$('#file-note').onclick=()=>formDialog('Dokumentumadat rögzítése',`${field('file_name','Fájlnév','', 'text',true)}${field('file_type','Típus')}${area('note','Megjegyzés')}`,async d=>{await save('quote_received_files',{project_id:p.id,...d});await openProject(p.id)});
  document.querySelectorAll('[data-quote]').forEach(b=>b.onclick=()=>openQuote(b.dataset.quote));}
 async function newQuote(p){const number=`DK-${new Date().getFullYear()}-${crypto.randomUUID().slice(0,8).toUpperCase()}`;const quote=await save('quote_quotes',{project_id:p.id,number,title:p.name});await save('quote_versions',{quote_id:quote.id,name:'A változat'});await db.from('quote_timeline').insert({project_id:p.id,event:'Árajánlat készítése elkezdődött'});await refresh();showView('quotes');await openQuote(quote.id)}
+function renderProjects(){
+ $('#projects-list').innerHTML=state.projects.map(p=>{const c=state.customers.find(x=>x.id===p.client_id);return `<button class="list-row" data-project-link="${p.id}"><span><strong>${esc(p.name)}</strong><small>${esc(c?.name||'')} · ${esc(p.status)} · ${esc(p.work_address||'')}</small></span><span>Megnyitás →</span></button>`}).join('')||'<p class="muted">Még nincs projekt.</p>';
+ document.querySelectorAll('#projects-list [data-project-link]').forEach(button=>button.onclick=async()=>{try{const p=state.projects.find(x=>x.id===button.dataset.projectLink);showView('customers');await openCustomer(p.client_id);await openProject(p.id)}catch(error){fail(error)}});
+}
 function renderQuotes(){const out=state.quotes.map(q=>{const p=state.projects.find(x=>x.id===q.project_id);const c=state.customers.find(x=>x.id===p?.client_id);return `<button class="list-row" data-quote="${q.id}"><span><strong>${esc(q.number)} · ${esc(q.title||'')}</strong><small>${esc(c?.name||'')} · ${esc(p?.name||'')}</small></span><span>Megnyitás →</span></button>`}).join('');$('#quotes-list').innerHTML=out||'<p class="muted">Még nincs árajánlat.</p>';document.querySelectorAll('#quotes-list [data-quote]').forEach(b=>b.onclick=()=>openQuote(b.dataset.quote))}
 async function openQuote(id){showView('quotes');state.quote=state.quotes.find(q=>q.id===id);const versions=await rows('quote_versions',q=>q.select('*').eq('quote_id',id).order('created_at'));state.version=versions.find(v=>v.id===state.version?.id)||versions[0];await renderQuote(versions)}
 async function renderQuote(versions){const q=state.quote,v=state.version;state.items=await rows('quote_items',x=>x.select('*').eq('version_id',v.id).order('position'));const total=calculateTotal(state.items);const editable=v.status==='draft';const project=state.projects.find(p=>p.id===q.project_id);
