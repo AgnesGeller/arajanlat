@@ -78,7 +78,7 @@ function editCustomer(c={}){
 }
 const sharedFieldLabels={name:'Név',client_type:'Típus',contact_name:'Kapcsolattartó',phone:'Telefon',email:'Email',tax_number:'Adószám',project_address:'Munkavégzés címei',notes:'Megjegyzés'};
 function resolveCustomer(c){
- const fields='<p>Válaszd ki mezőnként, melyik érték maradjon meg mindhárom alkalmazásban.</p>'+Object.entries(c.sync_conflicts||{}).map(([key,v])=>'<section class="conflict-row"><h3>'+esc(sharedFieldLabels[key]||key)+'</h3><p><strong>Árajánlat:</strong><br>'+esc(v.local||'Nincs megadva')+'</p><p><strong>Közös törzs:</strong><br>'+esc(v.source||'Nincs megadva')+'</p><label>Megtartandó érték<select name="'+esc(key)+'" required><option value="">Válassz…</option><option value="source">Közös törzs értéke</option><option value="local">Árajánlat értéke</option></select></label></section>').join('');
+ const fields='<p>Egy ügyfélhez több munkavégzési cím tartozhat. A címeknél az összes címet is megtarthatod. A többi mezőnél válaszd ki a megtartandó értéket.</p>'+Object.entries(c.sync_conflicts||{}).map(([key,v])=>'<section class="conflict-row"><h3>'+esc(sharedFieldLabels[key]||key)+'</h3><p><strong>Árajánlat:</strong><br>'+esc(v.local||'Nincs megadva')+'</p><p><strong>Közös törzs:</strong><br>'+esc(v.source||'Nincs megadva')+'</p><label>Megtartandó érték<select name="'+esc(key)+'" required><option value="">Válassz…</option>'+(key==='project_address'?'<option value="both">Összes cím megtartása</option>':'')+'<option value="source">Közös törzs értéke</option><option value="local">Árajánlat értéke</option></select></label></section>').join('');
  formDialog('Eltérő ügyféladatok',fields,async choices=>{
   await rpc('quote_customer_resolve',{p_id:c.id,p_choices:choices});
   const message=await syncCustomers();await refresh();await openCustomer(c.id);return message;
@@ -86,7 +86,7 @@ function resolveCustomer(c){
 }
 function linkCustomer(c){
  const options=state.customers.filter(x=>x.id!==c.id&&x.source_customer_id&&x.is_active).map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('');
- formDialog('Meglévő közös ügyfélhez kapcsolás','<p><strong>'+esc(c.name)+'</strong> meglévő projektjei az alább választott ügyfélhez kerülnek. A régi ügyféladatokat megőrizzük.</p><label>Közös ügyfél<select name="target" required><option value="">Válassz ügyfelet…</option>'+options+'</select></label>',async data=>{
+ formDialog('Meglévő közös ügyfélhez kapcsolás','<p><strong>'+esc(c.name)+'</strong> meglévő projektjei az alább választott ügyfélhez kerülnek. Mindkét bejegyzés munkavégzési címeit és a régi ügyféladatokat megőrizzük.</p><label>Közös ügyfél<select name="target" required><option value="">Válassz ügyfelet…</option>'+options+'</select></label>',async data=>{
   const target=await rpc('quote_customer_link',{p_id:c.id,p_target:data.target});
   const message=await syncCustomers();await refresh();await openCustomer(target);return message;
  });
