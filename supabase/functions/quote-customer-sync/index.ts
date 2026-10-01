@@ -28,13 +28,13 @@ Deno.serve(async (req: Request) => {
           "Content-Type": "application/json", Prefer: "return=representation" },
         body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(15000),
       });
-      if (!response.ok) throw Error("Az ügyfélátadás állapota nem menthető.");
+      if (!response.ok) throw Error("A közös ügyféllista frissítésének eredménye nem menthető.");
       return response.status === 204 ? null : response.json();
     }
     const staff = await own("quote_staff?user_id=eq." + encodeURIComponent(user.id) + "&select=company_id");
     if (staff.length !== 1) return reply(403, { message: "Árajánlat-hozzáférés szükséges." });
     const sourceKey = Deno.env.get("KASSZA_SERVICE_ROLE_KEY");
-    if (!sourceKey) return reply(503, { message: "Az ügyfél mentve az Árajánlatban; a közös ügyféllista kapcsolata még nincs beállítva." });
+    if (!sourceKey) return reply(503, { message: "Az ügyfél mentve. A neve még nem kerülhet be a Kassza és a Munkalap közös listájába, mert a kapcsolat nincs beállítva." });
     async function source(path: string, body?: unknown) {
       const response = await fetch("https://wojgdfojupnfldrmqaht.supabase.co/rest/v1/" + path, {
         method: body === undefined ? "GET" : "POST",
@@ -43,7 +43,7 @@ Deno.serve(async (req: Request) => {
           Prefer: "resolution=ignore-duplicates,return=representation" },
         body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(15000),
       });
-      if (!response.ok) throw Error("A közös ügyféllistába történő átadás sikertelen. Később újra megpróbáljuk.");
+      if (!response.ok) throw Error("Az ügyfél neve még nem került be a közös listába. Később újra megpróbáljuk.");
       return response.status === 204 ? [] : response.json();
     }
     const pending = await own("quote_customer_sync?select=client_id,quote_clients!inner(*)&synced_at=is.null&quote_clients.company_id=eq." +
@@ -71,12 +71,12 @@ Deno.serve(async (req: Request) => {
       } catch (error) {
         failed++;
         await own("quote_customer_sync?client_id=eq." + c.id, "PATCH", {
-          last_attempt_at: new Date().toISOString(), last_error: error instanceof Error ? error.message : "Sikertelen átadás.",
+          last_attempt_at: new Date().toISOString(), last_error: error instanceof Error ? error.message : "A név még nem került be a közös listába.",
         });
       }
     }
     return reply(200, { synced, failed });
   } catch {
-    return reply(502, { message: "Az ügyfélátadás most nem elérhető. Az Árajánlatban mentett ügyfél megmarad." });
+    return reply(502, { message: "A közös ügyféllista most nem frissíthető. Az Árajánlatban mentett ügyfél megmarad." });
   }
 });
