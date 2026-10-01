@@ -54,3 +54,5 @@ dialog{border-radius:3px;padding:clamp(1.2rem,3vw,2.5rem)}
 
 .brand img.document-logo,#admin-print .print-brand img.document-logo{width:130px;height:auto;object-fit:contain}.site-head #install-app{min-height:44px;white-space:nowrap}
 @media(max-width:650px){.site-head #install-app{align-self:flex-start}}
+
+.customer-operations{margin:.8rem 0 1.5rem}.customer-operations summary{width:max-content;max-width:100%;font-size:.9rem;color:var(--sage);min-height:44px;display:list-item;padding:.7rem 0}.customer-addresses{padding-left:1.2rem}.customer-addresses li{padding:.3rem 0;overflow-wrap:anywhere}#customer-picker{width:100%;min-height:48px}#projects-list small{overflow-wrap:anywhere}

@@ -57,3 +57,9 @@ Az App letöltése gomb Androidon, Android-tableten és asztali Chrome/Edge bön
 Az assets/diszkertek-logo.png a felhasználó saját logója. Az ügyféloldal és az adminból nyomtatott/PDF-be mentett ajánlat ezt használja; a belső app saját Á pecsétikont használ. Minden későbbi, ügyfélnek küldendő dokumentumon ezt a logót kell használni.
 
 Jóváhagyott Á arculat: az appikonok, favicon és linkmegosztási előnézet az olajzöld–homok pecsétmintából készülnek. Forrás: assets/arajanlat-seal.png. A manifest külön 192/512 px és biztonságos szegélyű maskable ikont használ; a megosztási kép 1200×630 px PNG, abszolút HTTPS metaadatokkal. Az ügyfélanyagok Díszkertek logója ettől különálló.
+
+## Projektazonosító és ügyfélválasztás
+
+A `quote_projects.id` UUID változatlan, ez a későbbi integráció állandó kulcsa. A `quote_project_codes.sql` az adatbázisban osztja ki az egyedi, változtathatatlan `PR-év-sorszám` projektszámot. A számláló tranzakcióbiztos és nem érhető el a kliensből; az év a budapesti idő szerint számítódik, a sorszám 9999 után tovább nő. A korábbi projektek időrendben kapnak számot, meglévő ajánlatkapcsolataik megmaradnak. A másik alkalmazások bekötése későbbi, külön jóváhagyandó feladat.
+
+Az ügyfélválasztó ügyfélneveket és címeket mutat; a keresés szűri a választékot. A régi bejegyzések listanézete a Műveletek részbe került. Több cím esetén a projektnél egy munkavégzési címet lehet választani vagy beírni. A projektszám megjelenik a belső projekt- és ajánlatnézetben, illetve az ezután közzétett ajánlatokon. A korábban elfogadott ajánlatok mentett tartalmát nem írjuk át.
