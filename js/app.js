@@ -1,6 +1,6 @@
 import './modules/app-install.js';
 import { db, configured, rows, rpc } from './services/supabase-service.js';
-import { STAFF_ACCOUNTS } from './config.js';
+import { STAFF_ACCOUNTS, SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { offerEmail, composeEmail } from './services/email-service.js';
 import { calculateItem, calculateTotal, money, dateTime } from './modules/quote-calculator.js';
 
@@ -41,12 +41,13 @@ async function syncCustomers(){
  try{
   const {data:{session},error:sessionError}=await db.auth.getSession();
   if(sessionError||!session)return 'A közös ügyféllista frissítéséhez jelentkezz be újra.';
-  const {data,error}=await db.functions.invoke('quote-customer-sync',{body:{},headers:{Authorization:'Bearer '+session.access_token}});
-  if(error){console.warn('quote_customer_sync_unavailable',{type:error.name,status:error.context?.status||null});return 'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.';}
+  const response=await fetch(SUPABASE_URL+'/functions/v1/quote-customer-sync',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(100000)});
+  if(!response.ok){console.warn('quote_customer_sync_unavailable: HTTP '+response.status);return response.status===401?'A közös ügyféllista frissítéséhez jelentkezz be újra.':'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.';}
+  const data=await response.json();
   if(data.busy)return 'Az ügyféllista frissítése már folyamatban van.';
   if(data.failed||data.pending)return 'A közös ügyféllista frissült. Néhány ügyfélnél még ellenőrizni kell az adatokat.';
   return data.imported||data.synced?'A közös ügyféllista frissült.':'';
- }catch(error){console.warn('quote_customer_sync_unavailable',{type:error?.name});return 'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.'}finally{syncRunning=false}
+ }catch(error){console.warn('quote_customer_sync_unavailable: '+error?.name);return 'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.'}finally{syncRunning=false}
 }
 async function refreshCommonCustomers(silent=false){
  if(!state.session||syncRunning||$('#form-dialog').open)return;
