@@ -39,12 +39,14 @@ async function syncCustomers(){
  if(syncRunning||!state.session)return '';
  syncRunning=true;
  try{
-  const {data,error}=await db.functions.invoke('quote-customer-sync',{body:{}});
-  if(error)return 'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.';
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError||!session)return 'A közös ügyféllista frissítéséhez jelentkezz be újra.';
+  const {data,error}=await db.functions.invoke('quote-customer-sync',{body:{},headers:{Authorization:'Bearer '+session.access_token}});
+  if(error){console.warn('quote_customer_sync_unavailable',{type:error.name,status:error.context?.status||null});return 'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.';}
   if(data.busy)return 'Az ügyféllista frissítése már folyamatban van.';
   if(data.failed||data.pending)return 'A közös ügyféllista frissült. Néhány ügyfélnél még ellenőrizni kell az adatokat.';
   return data.imported||data.synced?'A közös ügyféllista frissült.':'';
- }catch{return 'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.'}finally{syncRunning=false}
+ }catch(error){console.warn('quote_customer_sync_unavailable',{type:error?.name});return 'A közös ügyféllista most nem frissíthető. Az itt mentett adatok megmaradnak.'}finally{syncRunning=false}
 }
 async function refreshCommonCustomers(silent=false){
  if(!state.session||syncRunning||$('#form-dialog').open)return;
