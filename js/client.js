@@ -3,7 +3,7 @@ import { money, dateTime } from './modules/quote-calculator.js';
 import { requestAppointments, appointmentLabel } from './modules/appointments.js';
 import { composeEmail } from './services/email-service.js';
 const $=s=>document.querySelector(s);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&gt;','>':'&lt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const token=new URLSearchParams(location.search).get('token');
 const identity={type:null,value:null};
 function status(message,error=false){$('#client-status').textContent=message;$('#client-status').classList.toggle('error',error)}

@@ -164,7 +164,7 @@ begin
  end if;
  insert into public.quote_client_requests(project_id,answers) values(p.id,clean);
  insert into public.quote_timeline(project_id,event) values(p.id,'Ügyfél adatbekérő visszaérkezett');
- update public.quote_projects set status='Ügyfél kitöltötte' where id=p.id;
+ update public.quote_projects set status='Ügyfél kitöltötte' where id=p.id and status in ('Új érdeklődés','Adatbekérő kiküldve','Ügyfél kitöltötte');
  update public.quote_public_tokens set revoked_at=now() where id=tok.id;
  return jsonb_build_object('saved',true,'appointment',appointment,'phone_requested',clean->>'meeting_choice'='phone');
 end $$;

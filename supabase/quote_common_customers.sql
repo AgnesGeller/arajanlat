@@ -186,7 +186,7 @@ begin
  if nullif(btrim(p_name),'') is null then raise exception 'Az ügyfél neve kötelező';end if;
  if p_id is null then
   insert into public.quote_clients(company_id,name,client_type,contact_name,phone,email,billing_address,project_address,notes,shared_sync_enabled)
-  values(company,btrim(p_name),p_client_type,p_contact_name,p_phone,p_email,p_billing_address,p_project_address,p_notes,coalesce(p_share,true)) returning * into c;
+  values(company,btrim(p_name),p_client_type,p_contact_name,p_phone,p_email,p_billing_address,p_project_address,p_notes,true) returning * into c;
  else
   select * into c from public.quote_clients where id=p_id and company_id=company and merged_into is null for update;
   if not found then raise exception 'Az ügyfél nem található' using errcode='42501';end if;
@@ -194,7 +194,7 @@ begin
    raise exception 'Az ügyfél adatai közben megváltoztak. Frissítsd a listát, majd nyisd meg újra a szerkesztést.' using errcode='40001';end if;
   update public.quote_clients set name=btrim(p_name),client_type=p_client_type,contact_name=p_contact_name,phone=p_phone,email=p_email,
    billing_address=p_billing_address,project_address=p_project_address,notes=p_notes,
-   shared_sync_enabled=coalesce(p_share,shared_sync_enabled) where id=c.id returning * into c;
+   shared_sync_enabled=true where id=c.id returning * into c;
  end if;
  return c;
 end $$;
