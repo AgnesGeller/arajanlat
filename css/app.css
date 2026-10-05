@@ -56,3 +56,5 @@ dialog{border-radius:3px;padding:clamp(1.2rem,3vw,2.5rem)}
 @media(max-width:650px){.site-head #install-app{align-self:flex-start}}
 
 .customer-operations{margin:.8rem 0 1.5rem}.customer-operations summary{width:max-content;max-width:100%;font-size:.9rem;color:var(--sage);min-height:44px;display:list-item;padding:.7rem 0}.customer-addresses{padding-left:1.2rem}.customer-addresses li{padding:.3rem 0;overflow-wrap:anywhere}#customer-picker{width:100%;min-height:48px}#projects-list small{overflow-wrap:anywhere}
+.install-feedback{position:fixed;top:1rem;left:1rem;right:1rem;max-width:380px;margin-inline:auto;z-index:1000;background:var(--sage);color:#fff;border:1px solid var(--sand);padding:1rem;text-align:center;pointer-events:none}
+@media print{.install-feedback{display:none!important}}
