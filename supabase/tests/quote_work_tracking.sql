@@ -83,4 +83,11 @@ do $$ begin
  exception when insufficient_privilege then null; end;
 end $$;
 reset role;
+set local role service_role;
+do $$ begin
+ if public.quote_project_work_summary(current_setting('quote.test_project')::uuid) is null then
+  raise exception 'A szerveroldali összesítő nem elérhető.';
+ end if;
+end $$;
+reset role;
 rollback;

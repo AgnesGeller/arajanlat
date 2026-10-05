@@ -40,7 +40,13 @@ változtatásai elkülönítve maradtak, nem részei ennek a commitnak.
   frontendes forrásadatírás tiltása, javítás és elavult párhuzamos frissítés.
 - Éles Árajánlat staff belépéssel szinkron és összesítés; érvénytelen és idegen
   projekthez tartozó belépés elutasítva.
-- A valódi Munkalap-sessionnel végzett dolgozói végpontpróba még szükséges.
+- Valódi Munkalap-sessionnel is ellenőrizve: PR-2026-0003 kiválasztva, mindkét sáv
+  egyezik az Árajánlat összesítésével. Beküldés nélkül.
+- Az éles böngészős próba két hibát tárt fel: hiányzó x-client-info CORS-fejléc
+  és a service_role összesítő ágban feleslegesen kiértékelt felhasználói ellenőrzés.
+  Mindkettő javítva, a szerveroldali ág külön SQL regressziós tesztet kapott.
+- A fizikai telefon/tablet ellenőrzése még hátravan; a böngészős méretállító
+  ebben a környezetben nem alkalmazta a kért 390 px-es szélességet.
 
 ## Megőrzött bemutató
 

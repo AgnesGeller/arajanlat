@@ -96,7 +96,9 @@ Az Árajánlat saját belépése szükséges. A lépésválasztóval vagy az El�
 A javítási lépés csak számítási előnézet; a negyedik munkalap 11:00-s távozása megmaradt.
 A projektben a **Bemutató végigjátszása** gomb is ide vezet.
 
-## Még ellenőrizendő
+## Ellenőrizve
 
-Valódi Munkalap-belépéssel a dolgozói, két sávos nézet. A helyi beküldési
-regressziós próba és az elkülönített kiegészítés tesztje sikeres.
+Valódi Munkalap-belépéssel is megjelent a projektválasztó és mindkét sáv:
+100% készültség, 98,55% időkeret, 0,71 főóra maradék. Ezen a próbán nem küldtünk
+be munkalapot. A helyi beküldési regressziós próba is sikeres.
+A fizikai telefon/tablet nézetet még érdemes a saját eszközön ellenőrizni.

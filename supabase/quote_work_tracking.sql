@@ -115,7 +115,9 @@ create or replace function public.quote_project_work_summary(p_project uuid)
 returns jsonb language plpgsql stable security invoker set search_path='' as $$
 declare versions uuid[]; budget numeric; records jsonb; items jsonb:='[]'::jsonb; settings jsonb:='[]'::jsonb;
 begin
-  if current_user<>'service_role' and not quote_private.can_project(p_project) then raise exception 'Nincs projekt-hozzáférés.' using errcode='42501'; end if;
+  if current_user<>'service_role' then
+    if not quote_private.can_project(p_project) then raise exception 'Nincs projekt-hozzáférés.' using errcode='42501'; end if;
+  end if;
   select array_agg(v.id) into versions from public.quote_versions v join public.quote_quotes q on q.id=v.quote_id
     where q.project_id=p_project and v.status='accepted';
   if cardinality(versions)=1 then

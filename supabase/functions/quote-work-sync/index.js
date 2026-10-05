@@ -20,7 +20,7 @@ Deno.serve(async request=>{
     const user=await auth.json();
     async function own(path,body){
       const response=await fetch(ownUrl+'/rest/v1/'+path,{method:body===undefined?'GET':'POST',headers:{apikey:ownKey,Authorization:'Bearer '+ownKey,'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(20000)});
-      if(!response.ok)throw Error('Az Árajánlat munkalapadatai most nem frissíthetők.');
+      if(!response.ok){const failure=await response.json().catch(()=>({}));console.error('quote-work-sync own request:',path.split('?')[0],response.status,failure.code||'');throw Error('Az Árajánlat munkalapadatai most nem frissíthetők.');}
       return response.json();
     }
     let company;
@@ -90,5 +90,5 @@ Deno.serve(async request=>{
       return reply(200,{projects:result,issues:[...new Set(issues)]});
     }
     return reply(200,{imported:records.length,issues:[...new Set(issues)]});
-  }catch(error){return reply(503,{message:error.message||'A munkalapok most nem frissíthetők.'});}
+  }catch(error){console.error('quote-work-sync:',error.message);return reply(503,{message:error.message||'A munkalapok most nem frissíthetők.'});}
 });
