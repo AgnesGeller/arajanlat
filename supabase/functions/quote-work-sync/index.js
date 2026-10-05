@@ -1,7 +1,7 @@
 import { calculateWorksheet } from './worksheet-calculator.js';
 import { calculateProgress } from './work-progress.js';
 const SOURCE='https://wojgdfojupnfldrmqaht.supabase.co';
-const headers={'Access-Control-Allow-Origin':'https://agnesgeller.github.io','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'POST,OPTIONS','Content-Type':'application/json'};
+const headers={'Access-Control-Allow-Origin':'https://agnesgeller.github.io','Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info','Access-Control-Allow-Methods':'POST,OPTIONS','Content-Type':'application/json'};
 const reply=(status,body)=>new Response(JSON.stringify(body),{status,headers});
 const normalize=value=>String(value??'').normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('hu');
 Deno.serve(async request=>{
