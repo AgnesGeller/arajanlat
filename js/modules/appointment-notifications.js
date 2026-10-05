@@ -1,6 +1,6 @@
 import { rows, rpc } from '../services/supabase-service.js';
 import { dateTime } from './quote-calculator.js';
-const titles={booked:'Új találkozófoglalás',cancelled:'Találkozó lemondva',reminder:'Találkozó 3 órán belül',phone:'Telefonos időpont-egyeztetés'};
+const titles={booked:'Új találkozófoglalás',cancelled:'Találkozó lemondva',reminder:'Találkozó 1 órán belül',phone:'Telefonos időpont-egyeztetés'};
 let timer, activeUser, running=false;
 const box=()=>document.querySelector('#appointment-notifications');
 async function subscription() {return (await navigator.serviceWorker.getRegistration())?.pushManager?.getSubscription();}

@@ -15,7 +15,7 @@ A szabad időpontok közös Árajánlat-naptárt alkotnak. A foglalt idővel át
 
 Belépés után nyisd le az **Értesítések** részt, és válaszd a **Riasztás bekapcsolása ezen az eszközön** gombot. Engedélyezd a böngésző kérését. Ezt külön kell megtenni minden telefonon, tableten és PC-n. Az eszköz és a böngésző értesítési beállításai se tiltsák a riasztást. A riasztás kikapcsolható; kijelentkezéskor az adott eszköz feliratkozása megszűnik.
 
-A Supabase szerver percenként dolgozza fel a foglalási értesítéseket, lemondásokat és telefonos egyeztetési kéréseket. A 3 órás emlékeztetőt a szerver küldi, bezárt app mellett is. A böngésző/operációs rendszer tényleges kézbesítése függ az internetkapcsolattól és az értesítési beállításoktól; a pontos jelzéshangot az eszköz kezeli. Három órán belül rögzített találkozónál az azonnali foglalási értesítés megy ki, külön visszamenőleges emlékeztető nem.
+A Supabase szerver percenként dolgozza fel a foglalási értesítéseket, lemondásokat és telefonos egyeztetési kéréseket. A 1 órás emlékeztetőt a szerver küldi, bezárt app mellett is. A böngésző/operációs rendszer tényleges kézbesítése függ az internetkapcsolattól és az értesítési beállításoktól; a pontos jelzéshangot az eszköz kezeli. Egy órán belül rögzített találkozónál az azonnali foglalási értesítés megy ki, külön visszamenőleges emlékeztető nem.
 
 ## Automatikus email – aktiválás szükséges
 
@@ -31,7 +31,7 @@ Kulcsot és jelszót ne másolj a GitHubba vagy a beszélgetésbe. A Resend ingy
 
 ## Fejlesztési ellenőrzés
 
-- `supabase/tests/quote_appointments.sql`: tranzakcióban ellenőrzi az azonosítást, token egyszeri használatát, foglalást, átfedések elutasítását, telefonos alternatívát, módosítást, lemondást, 3 órás ütemezést és a jogosultságokat. Minden tesztadat visszagörgetésre kerül.
+- `supabase/tests/quote_appointments.sql`: tranzakcióban ellenőrzi az azonosítást, token egyszeri használatát, foglalást, átfedések elutasítását, telefonos alternatívát, módosítást, lemondást, 1 órás ütemezést és a jogosultságokat. Minden tesztadat visszagörgetésre kerül.
 - A worker `self_check` módja csak helyben készít titkosított push üzenetet; nem foglal le eseményt, és nem küld emailt vagy push üzenetet.
 - Az anonim publikus RPC-k szándékosan token + ügyfélazonosítás alapján férnek hozzá; a táblákhoz nincs anonim hozzáférés. A worker Vault- és küldési RPC-jei kizárólag a szerver szerepköréből hívhatók.
 - A saját `quote-appointment-notifications` Cron-feladat nem módosít más ütemezést. A Munkalap/Kassza adatbázisai, belépései és fájljai változatlanok.

@@ -4,7 +4,7 @@ import webpush from 'npm:web-push@3.6.7';
 const client = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {auth:{persistSession:false,autoRefreshToken:false}});
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {status,headers:{'Content-Type':'application/json'}});
 const rpc = async (name: string,args={}) => {const {data,error}=await client.rpc(name,args);if(error)throw error;return data;};
-const titles: Record<string,string> = {booked:'Új találkozófoglalás',cancelled:'Találkozó lemondva',reminder:'Találkozó 3 órán belül',phone:'Telefonos időpont-egyeztetés'};
+const titles: Record<string,string> = {booked:'Új találkozófoglalás',cancelled:'Találkozó lemondva',reminder:'Találkozó 1 órán belül',phone:'Telefonos időpont-egyeztetés'};
 const date = (value: string) => new Intl.DateTimeFormat('hu-HU',{dateStyle:'long',timeStyle:'short',timeZone:'Europe/Budapest'}).format(new Date(value));
 
 Deno.serve(async request => {

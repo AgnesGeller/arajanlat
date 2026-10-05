@@ -46,9 +46,9 @@ begin
  if tg_op='INSERT' and new.status='booked' then
   insert into public.quote_appointment_events(company_id,project_id,appointment_id,kind,due_at,expires_at)
    values(new.company_id,new.project_id,new.id,'booked',now(),s.starts_at);
-  if s.starts_at>now()+interval '3 hours' then
+  if s.starts_at>now()+interval '1 hour' then
    insert into public.quote_appointment_events(company_id,project_id,appointment_id,kind,due_at,expires_at)
-    values(new.company_id,new.project_id,new.id,'reminder',s.starts_at-interval '3 hours',s.starts_at);
+    values(new.company_id,new.project_id,new.id,'reminder',s.starts_at-interval '1 hour',s.starts_at);
   end if;
  elsif tg_op='UPDATE' and old.status='booked' and new.status='cancelled' then
   update public.quote_appointment_events set cancelled=true where appointment_id=new.id and kind in ('booked','reminder');
