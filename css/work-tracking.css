@@ -1,0 +1,10 @@
+.work-progress{padding:1rem 0;border-bottom:1px solid var(--line,#dedbcf)}
+.work-progress progress{display:block;width:100%;height:1.2rem;margin:.75rem 0;accent-color:#596647}
+.work-progress p{margin:.4rem 0}
+.work-lines>div{display:flex;justify-content:space-between;gap:1rem;padding:.65rem 0;border-bottom:1px solid #dedbcf}
+.work-lines span{min-width:0;overflow-wrap:anywhere}
+.work-lines small{display:block}
+.work-lines strong{flex-shrink:0}
+.work-tracking details{padding:.6rem 0}
+.work-tracking summary{cursor:pointer;min-height:44px;display:flex;align-items:center;overflow-wrap:anywhere}
+@media(max-width:480px){.work-lines>div{flex-direction:column;gap:.25rem}.work-tracking{padding:1rem}}

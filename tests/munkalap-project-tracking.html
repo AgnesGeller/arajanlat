@@ -1,0 +1,21 @@
+<!doctype html><html lang="hu"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../integration/munkalap-project-tracking.css"><title>Munkalap projektkövetés ellenőrzése</title><main><h1>Munkalap projektkövetés ellenőrzése</h1><form id="worksheetForm"><section class="worktime"><label>Ügyfél<input name="customerName" value="Geller Ágnes"></label><label>Cím<input name="address" value="Teszt utca 1"></label><button>Beküldés ellenőrzése</button></section></form><pre id="result"></pre></main>
+<script>
+let responses=[],fail=false,submits=0;
+window.MunkalapProjectContext=()=>({signedIn:true,customer_id:'teszt',address:'teszt',work_date:'2026-10-05'});
+window.MunkalapDB={projectAccessToken:async()=>'helyi-teszt'};
+window.fetch=async()=>{if(fail)throw Error('Helyi hálózati próba');return {ok:true,json:async()=>({projects:responses})};};
+document.querySelector('form').addEventListener('submit',e=>{e.preventDefault();submits++;});
+</script><script src="../integration/munkalap-project-tracking.js"></script><script>
+(async()=>{
+ const checks={};await new Promise(r=>setTimeout(r,100));
+ checks.no_started_project_hidden=document.querySelector('.quote-project-tracking').hidden;
+ responses=[{id:'tesztprojekt',name:'Grill terasz nyárikerttel',project_code:'PR-2026-0003',completion:50,hours:14,budget_hours:140,time_percent:10,remaining_hours:126}];
+ document.dispatchEvent(new Event('visibilitychange'));await new Promise(r=>setTimeout(r,100));
+ checks.two_bars=document.querySelectorAll('progress').length===2;
+ checks.project_saved=new FormData(document.querySelector('form')).get('quote_project_id')==='tesztprojekt';
+ fail=true;document.querySelector('[data-project-refresh]').click();await new Promise(r=>setTimeout(r,100));
+ document.querySelector('form').requestSubmit();checks.failure_does_not_block_submit=submits===1;
+ checks.error_visible=document.querySelector('.quote-project-tracking').textContent.includes('továbbra is elküldhető');
+ document.querySelector('#result').textContent=JSON.stringify(checks,null,2);
+})();
+</script></html>

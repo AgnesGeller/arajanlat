@@ -1,0 +1,1085 @@
+{
+  "source_file": "Költségvetés 2026 (3).xlsx",
+  "source_sheet": "Elszám kalkulátor",
+  "entries": [
+    {
+      "name": "Munkadíj",
+      "price": "8500/Fő/óra",
+      "unit": "munkaóra",
+      "formula": "=B14*C12",
+      "source_cell": "A12"
+    },
+    {
+      "name": "Munkadíj (fő)",
+      "price": null,
+      "unit": "fő",
+      "formula": "=B14*C13*C14",
+      "source_cell": "A13"
+    },
+    {
+      "name": "Munkadíj (óra)",
+      "price": 8500,
+      "unit": "óra",
+      "formula": null,
+      "source_cell": "A14"
+    },
+    {
+      "name": "Zöldhulladék ömlesztett",
+      "price": 9000,
+      "unit": "m3",
+      "formula": "=B15*C15",
+      "source_cell": "A15"
+    },
+    {
+      "name": "Zöldhulladék zsákos",
+      "price": 1300,
+      "unit": "zsák",
+      "formula": "=B16*C16",
+      "source_cell": "A16"
+    },
+    {
+      "name": "Növényvédelem",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(C17=0,0,IF(C17=1,25000,IF(C17<4,17000*(C17-1)+25000,12000*(C17-4)+76000)))",
+      "source_cell": "A17"
+    },
+    {
+      "name": "Lemosó permetezés",
+      "price": "1: 20000,\n 2-3:12000, \n4+:7000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(C18=0,0,IF(C18=1,20000,IF(C18<4,12000*(C18-1)+20000,7000*(C18-4)+56000)))",
+      "source_cell": "A18"
+    },
+    {
+      "name": "Gyomirtó (1L)",
+      "price": 1400,
+      "unit": "liter",
+      "formula": "=B19*C19",
+      "source_cell": "A19"
+    },
+    {
+      "name": "Talajpermet",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(C20=0,0,IF(C20=1,25000,IF(C20<4,17000*(C20-1)+25000,12000*(C20-4)+76000)))",
+      "source_cell": "A20"
+    },
+    {
+      "name": "Fűmag (adagoló)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=B21*C21",
+      "source_cell": "A21"
+    },
+    {
+      "name": "Műtrágya (általános)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=B22*C22",
+      "source_cell": "A22"
+    },
+    {
+      "name": "Műtrágya (mohairtó)",
+      "price": 9000,
+      "unit": "adagoló",
+      "formula": "=B23*C23",
+      "source_cell": "A23"
+    },
+    {
+      "name": "Műtrágya (gyomirtó)",
+      "price": 12000,
+      "unit": "adagoló",
+      "formula": "=B24*C24",
+      "source_cell": "A24"
+    },
+    {
+      "name": "Marhatrágya 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=B25*C25",
+      "source_cell": "A25"
+    },
+    {
+      "name": "Marhatrágya 50L",
+      "price": 3000,
+      "unit": "zsák",
+      "formula": "=B26*C26",
+      "source_cell": "A26"
+    },
+    {
+      "name": "Termőföld 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=B27*C27",
+      "source_cell": "A27"
+    },
+    {
+      "name": "Termőföld ömlesztett (1m3 / fuvar)",
+      "price": 30000,
+      "unit": "fuvar",
+      "formula": "=B28*C28",
+      "source_cell": "A28"
+    },
+    {
+      "name": "Termőföld ömlesztett (2m3 / fuvar)",
+      "price": 50000,
+      "unit": "fuvar",
+      "formula": "=B29*C29",
+      "source_cell": "A29"
+    },
+    {
+      "name": "Termőföld ömlesztett (3m3 / fuvar)",
+      "price": 75000,
+      "unit": "fuvar",
+      "formula": "=B30*C30",
+      "source_cell": "A30"
+    },
+    {
+      "name": "Öntözőrendszer anyagok",
+      "price": 0,
+      "unit": "db",
+      "formula": "=B31*C31",
+      "source_cell": "A31"
+    },
+    {
+      "name": "Egyéb2",
+      "price": null,
+      "unit": "m2",
+      "formula": "=B32*C32",
+      "source_cell": "A32"
+    },
+    {
+      "name": "Egyéb3",
+      "price": null,
+      "unit": null,
+      "formula": "=B33*C33",
+      "source_cell": "A33"
+    },
+    {
+      "name": "Egyéb4",
+      "price": null,
+      "unit": null,
+      "formula": "=B34*C34",
+      "source_cell": "A34"
+    },
+    {
+      "name": "Egyéb5",
+      "price": null,
+      "unit": null,
+      "formula": "=B35*C35",
+      "source_cell": "A35"
+    },
+    {
+      "name": "Munkadíj",
+      "price": "8500/Fő/óra",
+      "unit": "munkaóra",
+      "formula": "=H14*I12",
+      "source_cell": "G12"
+    },
+    {
+      "name": "Munkadíj (fő)",
+      "price": null,
+      "unit": "fő",
+      "formula": "=H14*I13*I14",
+      "source_cell": "G13"
+    },
+    {
+      "name": "Munkadíj (óra)",
+      "price": 8500,
+      "unit": "óra",
+      "formula": null,
+      "source_cell": "G14"
+    },
+    {
+      "name": "Zöldhulladék ömlesztett",
+      "price": 9000,
+      "unit": "m3",
+      "formula": "=H15*I15",
+      "source_cell": "G15"
+    },
+    {
+      "name": "Zöldhulladék zsákos",
+      "price": 1300,
+      "unit": "zsák",
+      "formula": "=H16*I16",
+      "source_cell": "G16"
+    },
+    {
+      "name": "Növényvédelem",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(I17=0,0,IF(I17=1,25000,IF(I17<4,17000*(I17-1)+25000,12000*(I17-4)+76000)))",
+      "source_cell": "G17"
+    },
+    {
+      "name": "Lemosó permetezés",
+      "price": "1: 20000,\n 2-3:12000, \n4+:7000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(I18=0,0,IF(I18=1,20000,IF(I18<4,12000*(I18-1)+20000,7000*(I18-4)+56000)))",
+      "source_cell": "G18"
+    },
+    {
+      "name": "Gyomirtó (1L)",
+      "price": 1400,
+      "unit": "liter",
+      "formula": "=H19*I19",
+      "source_cell": "G19"
+    },
+    {
+      "name": "Talajpermet",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(I20=0,0,IF(I20=1,25000,IF(I20<4,17000*(I20-1)+25000,12000*(I20-4)+76000)))",
+      "source_cell": "G20"
+    },
+    {
+      "name": "Fűmag (adagoló)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=H21*I21",
+      "source_cell": "G21"
+    },
+    {
+      "name": "Műtrágya (általános)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=H22*I22",
+      "source_cell": "G22"
+    },
+    {
+      "name": "Műtrágya (mohairtó)",
+      "price": 9000,
+      "unit": "adagoló",
+      "formula": "=H23*I23",
+      "source_cell": "G23"
+    },
+    {
+      "name": "Műtrágya (gyomirtó)",
+      "price": 12000,
+      "unit": "adagoló",
+      "formula": "=H24*I24",
+      "source_cell": "G24"
+    },
+    {
+      "name": "Marhatrágya 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=H25*I25",
+      "source_cell": "G25"
+    },
+    {
+      "name": "Marhatrágya 50L",
+      "price": 3000,
+      "unit": "zsák",
+      "formula": "=H26*I26",
+      "source_cell": "G26"
+    },
+    {
+      "name": "Termőföld 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=H27*I27",
+      "source_cell": "G27"
+    },
+    {
+      "name": "Termőföld ömlesztett (1m3 / fuvar)",
+      "price": 30000,
+      "unit": "fuvar",
+      "formula": "=H28*I28",
+      "source_cell": "G28"
+    },
+    {
+      "name": "Termőföld ömlesztett (2m3 / fuvar)",
+      "price": 50000,
+      "unit": "fuvar",
+      "formula": "=H29*I29",
+      "source_cell": "G29"
+    },
+    {
+      "name": "Termőföld ömlesztett (3m3 / fuvar)",
+      "price": 75000,
+      "unit": "fuvar",
+      "formula": "=H30*I30",
+      "source_cell": "G30"
+    },
+    {
+      "name": "Egyéb1",
+      "price": 0,
+      "unit": null,
+      "formula": 0,
+      "source_cell": "G31"
+    },
+    {
+      "name": "Egyéb2",
+      "price": 0,
+      "unit": null,
+      "formula": "=H32*I32",
+      "source_cell": "G32"
+    },
+    {
+      "name": "Egyéb3",
+      "price": 0,
+      "unit": null,
+      "formula": "=H33*I33",
+      "source_cell": "G33"
+    },
+    {
+      "name": "Egyéb4",
+      "price": null,
+      "unit": null,
+      "formula": "=H34*I34",
+      "source_cell": "G34"
+    },
+    {
+      "name": "Egyéb5",
+      "price": null,
+      "unit": null,
+      "formula": "=H35*I35",
+      "source_cell": "G35"
+    },
+    {
+      "name": "Munkadíj",
+      "price": "8500/Fő/óra",
+      "unit": "munkaóra",
+      "formula": "=N14*O12",
+      "source_cell": "M12"
+    },
+    {
+      "name": "Munkadíj (fő)",
+      "price": null,
+      "unit": "fő",
+      "formula": "=N14*O13*O14",
+      "source_cell": "M13"
+    },
+    {
+      "name": "Munkadíj (óra)",
+      "price": 8500,
+      "unit": "óra",
+      "formula": null,
+      "source_cell": "M14"
+    },
+    {
+      "name": "Zöldhulladék ömlesztett",
+      "price": 9000,
+      "unit": "m3",
+      "formula": "=N15*O15",
+      "source_cell": "M15"
+    },
+    {
+      "name": "Zöldhulladék zsákos",
+      "price": 1300,
+      "unit": "zsák",
+      "formula": "=N16*O16",
+      "source_cell": "M16"
+    },
+    {
+      "name": "Növényvédelem",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(O17=0,0,IF(O17=1,25000,IF(O17<4,17000*(O17-1)+25000,12000*(O17-4)+76000)))",
+      "source_cell": "M17"
+    },
+    {
+      "name": "Lemosó permetezés",
+      "price": "1: 20000,\n 2-3:12000, \n4+:7000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(O18=0,0,IF(O18=1,20000,IF(O18<4,12000*(O18-1)+20000,7000*(O18-4)+56000)))",
+      "source_cell": "M18"
+    },
+    {
+      "name": "Gyomirtó (1L)",
+      "price": 1400,
+      "unit": "liter",
+      "formula": "=N19*O19",
+      "source_cell": "M19"
+    },
+    {
+      "name": "Talajpermet",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(O20=0,0,IF(O20=1,25000,IF(O20<4,17000*(O20-1)+25000,12000*(O20-4)+76000)))",
+      "source_cell": "M20"
+    },
+    {
+      "name": "Fűmag (adagoló)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=N21*O21",
+      "source_cell": "M21"
+    },
+    {
+      "name": "Műtrágya (általános)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=N22*O22",
+      "source_cell": "M22"
+    },
+    {
+      "name": "Műtrágya (mohairtó)",
+      "price": 9000,
+      "unit": "adagoló",
+      "formula": "=N23*O23",
+      "source_cell": "M23"
+    },
+    {
+      "name": "Műtrágya (gyomirtó)",
+      "price": 12000,
+      "unit": "adagoló",
+      "formula": "=N24*O24",
+      "source_cell": "M24"
+    },
+    {
+      "name": "Marhatrágya 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=N25*O25",
+      "source_cell": "M25"
+    },
+    {
+      "name": "Marhatrágya 50L",
+      "price": 3000,
+      "unit": "zsák",
+      "formula": "=N26*O26",
+      "source_cell": "M26"
+    },
+    {
+      "name": "Termőföld 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=N27*O27",
+      "source_cell": "M27"
+    },
+    {
+      "name": "Termőföld ömlesztett (1m3 / fuvar)",
+      "price": 30000,
+      "unit": "fuvar",
+      "formula": "=N28*O28",
+      "source_cell": "M28"
+    },
+    {
+      "name": "Termőföld ömlesztett (2m3 / fuvar)",
+      "price": 50000,
+      "unit": "fuvar",
+      "formula": "=N29*O29",
+      "source_cell": "M29"
+    },
+    {
+      "name": "Termőföld ömlesztett (3m3 / fuvar)",
+      "price": 75000,
+      "unit": "fuvar",
+      "formula": "=N30*O30",
+      "source_cell": "M30"
+    },
+    {
+      "name": "Egyéb1",
+      "price": null,
+      "unit": null,
+      "formula": "=N31*O31",
+      "source_cell": "M31"
+    },
+    {
+      "name": "Egyéb2",
+      "price": null,
+      "unit": null,
+      "formula": "=N32*O32",
+      "source_cell": "M32"
+    },
+    {
+      "name": "Egyéb3",
+      "price": null,
+      "unit": null,
+      "formula": "=N33*O33",
+      "source_cell": "M33"
+    },
+    {
+      "name": "Egyéb4",
+      "price": null,
+      "unit": null,
+      "formula": "=N34*O34",
+      "source_cell": "M34"
+    },
+    {
+      "name": "Egyéb5",
+      "price": null,
+      "unit": null,
+      "formula": "=N35*O35",
+      "source_cell": "M35"
+    },
+    {
+      "name": "Munkadíj",
+      "price": "8500/Fő/óra",
+      "unit": "munkaóra",
+      "formula": "=B50*C48",
+      "source_cell": "A48"
+    },
+    {
+      "name": "Munkadíj (fő)",
+      "price": null,
+      "unit": "fő",
+      "formula": "=B50*C49*C50",
+      "source_cell": "A49"
+    },
+    {
+      "name": "Munkadíj (óra)",
+      "price": 8500,
+      "unit": "óra",
+      "formula": null,
+      "source_cell": "A50"
+    },
+    {
+      "name": "Zöldhulladék ömlesztett",
+      "price": 9000,
+      "unit": "m3",
+      "formula": "=B51*C51",
+      "source_cell": "A51"
+    },
+    {
+      "name": "Zöldhulladék zsákos",
+      "price": 1300,
+      "unit": "zsák",
+      "formula": "=B52*C52",
+      "source_cell": "A52"
+    },
+    {
+      "name": "Növényvédelem",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(C53=0,0,IF(C53=1,25000,IF(C53<4,17000*(C53-1)+25000,12000*(C53-4)+76000)))",
+      "source_cell": "A53"
+    },
+    {
+      "name": "Lemosó permetezés",
+      "price": "1: 20000,\n 2-3:12000, \n4+:7000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(C54=0,0,IF(C54=1,20000,IF(C54<4,12000*(C54-1)+20000,7000*(C54-4)+56000)))",
+      "source_cell": "A54"
+    },
+    {
+      "name": "Gyomirtó (1L)",
+      "price": 1400,
+      "unit": "liter",
+      "formula": "=B55*C55",
+      "source_cell": "A55"
+    },
+    {
+      "name": "Talajpermet",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(C56=0,0,IF(C56=1,25000,IF(C56<4,17000*(C56-1)+25000,12000*(C56-4)+76000)))",
+      "source_cell": "A56"
+    },
+    {
+      "name": "Fűmag (adagoló)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=B57*C57",
+      "source_cell": "A57"
+    },
+    {
+      "name": "Műtrágya (általános)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=B58*C58",
+      "source_cell": "A58"
+    },
+    {
+      "name": "Műtrágya (mohairtó)",
+      "price": 9000,
+      "unit": "adagoló",
+      "formula": "=B59*C59",
+      "source_cell": "A59"
+    },
+    {
+      "name": "Műtrágya (gyomirtó)",
+      "price": 12000,
+      "unit": "adagoló",
+      "formula": "=B60*C60",
+      "source_cell": "A60"
+    },
+    {
+      "name": "Marhatrágya 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=B61*C61",
+      "source_cell": "A61"
+    },
+    {
+      "name": "Marhatrágya 50L",
+      "price": 3000,
+      "unit": "zsák",
+      "formula": "=B62*C62",
+      "source_cell": "A62"
+    },
+    {
+      "name": "Termőföld 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=B63*C63",
+      "source_cell": "A63"
+    },
+    {
+      "name": "Termőföld ömlesztett (1m3 / fuvar)",
+      "price": 30000,
+      "unit": "fuvar",
+      "formula": "=B64*C64",
+      "source_cell": "A64"
+    },
+    {
+      "name": "Termőföld ömlesztett (2m3 / fuvar)",
+      "price": 50000,
+      "unit": "fuvar",
+      "formula": "=B65*C65",
+      "source_cell": "A65"
+    },
+    {
+      "name": "Termőföld ömlesztett (3m3 / fuvar)",
+      "price": 75000,
+      "unit": "fuvar",
+      "formula": "=B66*C66",
+      "source_cell": "A66"
+    },
+    {
+      "name": "Munkadíj",
+      "price": "8500/Fő/óra",
+      "unit": "munkaóra",
+      "formula": "=H50*I48",
+      "source_cell": "G48"
+    },
+    {
+      "name": "Munkadíj (fő)",
+      "price": null,
+      "unit": "fő",
+      "formula": "=H50*I49*I50",
+      "source_cell": "G49"
+    },
+    {
+      "name": "Munkadíj (óra)",
+      "price": 8500,
+      "unit": "óra",
+      "formula": null,
+      "source_cell": "G50"
+    },
+    {
+      "name": "Zöldhulladék ömlesztett",
+      "price": 9000,
+      "unit": "m3",
+      "formula": "=H51*I51",
+      "source_cell": "G51"
+    },
+    {
+      "name": "Zöldhulladék zsákos",
+      "price": 1300,
+      "unit": "zsák",
+      "formula": "=H52*I52",
+      "source_cell": "G52"
+    },
+    {
+      "name": "Növényvédelem",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(I53=0,0,IF(I53=1,25000,IF(I53<4,17000*(I53-1)+25000,12000*(I53-4)+76000)))",
+      "source_cell": "G53"
+    },
+    {
+      "name": "Lemosó permetezés",
+      "price": "1: 20000,\n 2-3:12000, \n4+:7000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(I54=0,0,IF(I54=1,20000,IF(I54<4,12000*(I54-1)+20000,7000*(I54-4)+56000)))",
+      "source_cell": "G54"
+    },
+    {
+      "name": "Gyomirtó (1L)",
+      "price": 1400,
+      "unit": "liter",
+      "formula": "=H55*I55",
+      "source_cell": "G55"
+    },
+    {
+      "name": "Talajpermet",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(I56=0,0,IF(I56=1,25000,IF(I56<4,17000*(I56-1)+25000,12000*(I56-4)+76000)))",
+      "source_cell": "G56"
+    },
+    {
+      "name": "Fűmag (adagoló)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=H57*I57",
+      "source_cell": "G57"
+    },
+    {
+      "name": "Műtrágya (általános)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=H58*I58",
+      "source_cell": "G58"
+    },
+    {
+      "name": "Műtrágya (mohairtó)",
+      "price": 9000,
+      "unit": "adagoló",
+      "formula": "=H59*I59",
+      "source_cell": "G59"
+    },
+    {
+      "name": "Műtrágya (gyomirtó)",
+      "price": 12000,
+      "unit": "adagoló",
+      "formula": "=H60*I60",
+      "source_cell": "G60"
+    },
+    {
+      "name": "Marhatrágya 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=H61*I61",
+      "source_cell": "G61"
+    },
+    {
+      "name": "Marhatrágya 50L",
+      "price": 3000,
+      "unit": "zsák",
+      "formula": "=H62*I62",
+      "source_cell": "G62"
+    },
+    {
+      "name": "Termőföld 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=H63*I63",
+      "source_cell": "G63"
+    },
+    {
+      "name": "Termőföld ömlesztett (1m3 / fuvar)",
+      "price": 30000,
+      "unit": "fuvar",
+      "formula": "=H64*I64",
+      "source_cell": "G64"
+    },
+    {
+      "name": "Termőföld ömlesztett (2m3 / fuvar)",
+      "price": 50000,
+      "unit": "fuvar",
+      "formula": "=H65*I65",
+      "source_cell": "G65"
+    },
+    {
+      "name": "Termőföld ömlesztett (3m3 / fuvar)",
+      "price": 75000,
+      "unit": "fuvar",
+      "formula": "=H66*I66",
+      "source_cell": "G66"
+    },
+    {
+      "name": "Földelszállítás",
+      "price": 18000,
+      "unit": "m3",
+      "formula": "=H67*I67",
+      "source_cell": "G67"
+    },
+    {
+      "name": "Kulé Kavics fuvar",
+      "price": 18800,
+      "unit": "m3",
+      "formula": "=H68*I68",
+      "source_cell": "G68"
+    },
+    {
+      "name": "Csepegtető anyagok",
+      "price": 8500,
+      "unit": "ctl",
+      "formula": "=H69*I69",
+      "source_cell": "G69"
+    },
+    {
+      "name": "Műanyag szegély és rögzítő tüske",
+      "price": 8100,
+      "unit": "ctl",
+      "formula": "=H70*I70",
+      "source_cell": "G70"
+    },
+    {
+      "name": "Geotextília + rögzítő tüske",
+      "price": 11000,
+      "unit": "ctl",
+      "formula": "=H71*I71",
+      "source_cell": "G71"
+    },
+    {
+      "name": "Munkadíj",
+      "price": "8500/Fő/óra",
+      "unit": "munkaóra",
+      "formula": "=N50*O48",
+      "source_cell": "M48"
+    },
+    {
+      "name": "Munkadíj (fő)",
+      "price": null,
+      "unit": "fő",
+      "formula": "=N50*O49*O50",
+      "source_cell": "M49"
+    },
+    {
+      "name": "Munkadíj (óra)",
+      "price": 8500,
+      "unit": "óra",
+      "formula": 0,
+      "source_cell": "M50"
+    },
+    {
+      "name": "Zöldhulladék ömlesztett",
+      "price": 9000,
+      "unit": "m3",
+      "formula": "=N51*O51",
+      "source_cell": "M51"
+    },
+    {
+      "name": "Zöldhulladék zsákos",
+      "price": 1300,
+      "unit": "zsák",
+      "formula": "=N52*O52",
+      "source_cell": "M52"
+    },
+    {
+      "name": "Növényvédelem",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(O53=0,0,IF(O53=1,25000,IF(O53<4,17000*(O53-1)+25000,12000*(O53-4)+76000)))",
+      "source_cell": "M53"
+    },
+    {
+      "name": "Lemosó permetezés",
+      "price": "1: 20000,\n 2-3:12000, \n4+:7000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(O54=0,0,IF(O54=1,20000,IF(O54<4,12000*(O54-1)+20000,7000*(O54-4)+56000)))",
+      "source_cell": "M54"
+    },
+    {
+      "name": "Gyomirtó (1L)",
+      "price": 1400,
+      "unit": "liter",
+      "formula": "=N55*O55",
+      "source_cell": "M55"
+    },
+    {
+      "name": "Talajpermet",
+      "price": "1: 25000,\n 2-3:17000, \n4+:12000",
+      "unit": "tartály (15L)",
+      "formula": "=IF(O56=0,0,IF(O56=1,25000,IF(O56<4,17000*(O56-1)+25000,12000*(O56-4)+76000)))",
+      "source_cell": "M56"
+    },
+    {
+      "name": "Fűmag (adagoló)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=N57*O57",
+      "source_cell": "M57"
+    },
+    {
+      "name": "Műtrágya (általános)",
+      "price": 6000,
+      "unit": "adagoló",
+      "formula": "=N58*O58",
+      "source_cell": "M58"
+    },
+    {
+      "name": "Műtrágya (mohairtó)",
+      "price": 9000,
+      "unit": "adagoló",
+      "formula": "=N59*O59",
+      "source_cell": "M59"
+    },
+    {
+      "name": "Műtrágya (gyomirtó)",
+      "price": 12000,
+      "unit": "adagoló",
+      "formula": "=N60*O60",
+      "source_cell": "M60"
+    },
+    {
+      "name": "Marhatrágya 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=N61*O61",
+      "source_cell": "M61"
+    },
+    {
+      "name": "Marhatrágya 50L",
+      "price": 3000,
+      "unit": "zsák",
+      "formula": "=N62*O62",
+      "source_cell": "M62"
+    },
+    {
+      "name": "Termőföld 20L",
+      "price": 1500,
+      "unit": "zsák",
+      "formula": "=N63*O63",
+      "source_cell": "M63"
+    },
+    {
+      "name": "Termőföld ömlesztett (1m3 / fuvar)",
+      "price": 30000,
+      "unit": "fuvar",
+      "formula": "=N64*O64",
+      "source_cell": "M64"
+    },
+    {
+      "name": "Termőföld ömlesztett (2m3 / fuvar)",
+      "price": 50000,
+      "unit": "fuvar",
+      "formula": "=N65*O65",
+      "source_cell": "M65"
+    },
+    {
+      "name": "Termőföld ömlesztett (3m3 / fuvar)",
+      "price": 75000,
+      "unit": "fuvar",
+      "formula": "=N66*O66",
+      "source_cell": "M66"
+    },
+    {
+      "name": "Anyagköltség",
+      "price": 20177,
+      "unit": "db",
+      "formula": "=N67*O67",
+      "source_cell": "M67"
+    },
+    {
+      "name": "Ereszcsatorna anyagok",
+      "price": null,
+      "unit": null,
+      "formula": "=N68*O68",
+      "source_cell": "M68"
+    },
+    {
+      "name": "Spray festék",
+      "price": null,
+      "unit": null,
+      "formula": "=N69*O69",
+      "source_cell": "M69"
+    },
+    {
+      "name": "Egyéb4",
+      "price": null,
+      "unit": null,
+      "formula": "=N70*O70",
+      "source_cell": "M70"
+    },
+    {
+      "name": "Egyéb5",
+      "price": null,
+      "unit": null,
+      "formula": "=N71*O71",
+      "source_cell": "M71"
+    },
+    {
+      "name": "Fa törzsvédő",
+      "price": 900,
+      "unit": "db",
+      "note": null,
+      "source_cell": "A76"
+    },
+    {
+      "name": "Bio permetezés",
+      "price": 15000,
+      "unit": "tartály",
+      "note": "15L",
+      "source_cell": "A77"
+    },
+    {
+      "name": "Geotextil",
+      "price": 700,
+      "unit": "m2",
+      "note": "leszúró tüskével",
+      "source_cell": "A78"
+    },
+    {
+      "name": "Fakaró",
+      "price": 1200,
+      "unit": "db",
+      "note": "150cm",
+      "source_cell": "A79"
+    },
+    {
+      "name": "Vörös fenyőkéreg (mulcs)",
+      "price": 45000,
+      "unit": "m3",
+      "note": "ömlesztett",
+      "source_cell": "A80"
+    },
+    {
+      "name": "Föld elszállítás",
+      "price": 20000,
+      "unit": "m3",
+      "note": "???",
+      "source_cell": "A81"
+    },
+    {
+      "name": "Növények",
+      "price": "?",
+      "unit": "db",
+      "note": "változó",
+      "source_cell": "A82"
+    },
+    {
+      "name": "Levendula New Garden",
+      "price": 2990,
+      "unit": "db",
+      "note": "K2",
+      "source_cell": "A83"
+    },
+    {
+      "name": "Mulcs",
+      "price": null,
+      "unit": "m3",
+      "note": null,
+      "source_cell": "A84"
+    },
+    {
+      "name": "Leszúró tüske",
+      "price": 60,
+      "unit": "db",
+      "note": null,
+      "source_cell": "A85"
+    },
+    {
+      "name": "Öntözőrendszer tavaszi indítás",
+      "price": 30000,
+      "unit": "db",
+      "note": null,
+      "source_cell": "A86"
+    },
+    {
+      "name": "Föld elszállítás ",
+      "price": 10000,
+      "unit": "mindig + fuvar",
+      "note": "hozzáadni",
+      "source_cell": "A87"
+    },
+    {
+      "name": "föld elszállítás ",
+      "price": 8000,
+      "unit": "m3",
+      "note": "fuvart hozzáadni",
+      "source_cell": "A88"
+    },
+    {
+      "name": "forgókotró",
+      "price": 90000,
+      "unit": "nap",
+      "note": null,
+      "source_cell": "A89"
+    }
+  ],
+  "user_override": {
+    "construction_3": {
+      "per_m3": 8000,
+      "fixed_transport": 10000,
+      "fixed_scope": "egy elszállítás; több fuvar munkalapon belüli kapcsolása tisztázandó",
+      "confirmed_on": "2026-10-05"
+    }
+  }
+}

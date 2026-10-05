@@ -1,0 +1,38 @@
+<!doctype html><html lang="hu"><meta charset="utf-8"><title>Munkalap kalkulátor ellenőrzése</title><body><h1>Munkalap kalkulátor ellenőrzése</h1><pre id="result">Ellenőrzés folyamatban…</pre><script type="module">
+import {calculateWorksheet,calculateProject,tierPrice} from '../js/modules/worksheet-calculator.js';
+import {calculateProgress} from '../js/modules/work-progress.js?test=2';
+import {calculateItem} from '../js/modules/quote-calculator.js';
+const tests=[];
+function check(name,fn){try{if(!fn())throw Error('Eltérő eredmény');tests.push({name,ok:true});}catch(e){tests.push({name,ok:false,error:e.message});}}
+const fixture=(data,id='teszt')=>({id,customer_name:'Teszt',form_data:data,updated_at:'2026-10-05T10:00:00Z'});
+const base={team_1_size:'2',team_1_arrival:'08:38',team_1_departure:'10:20'};
+check('Excel: 3,4 főóra, 28 900 Ft',()=>calculateWorksheet(fixture(base)).labor===28900);
+check('Változó munkaidő: 2 × 4,5 óra',()=>calculateWorksheet(fixture({...base,team_1_arrival:'08:00',team_1_departure:'12:30'})).labor===76500);
+check('Több csapat: 30,75 főóra',()=>calculateWorksheet(fixture({team_1_size:'3',team_1_arrival:'07:45',team_1_departure:'15:00',team_2_size:'1',team_2_arrival:'11:00',team_2_departure:'15:00',team_3_size:'2',team_3_arrival:'12:30',team_3_departure:'15:00'})).person_hours===30.75);
+check('Excel A78: geotextília 700 Ft/m²',()=>calculateWorksheet(fixture({...base,maintenance_18:'10'})).total===35900);
+check('Két zsák: 2 600 Ft',()=>calculateWorksheet(fixture({...base,maintenance_1:'2'})).total===31500);
+for(const [q,expected] of [[0,0],[1,18000],[2,26000],[3,34000],[1.5,22000]])check('Föld: '+q+' m³',()=>calculateWorksheet(fixture({...base,construction_3:String(q)})).known_total===28900+expected);
+check('Növényvédelem sávok',()=>[0,25000,42000,59000,76000,88000].every((v,q)=>tierPrice(q,'spray')===v));
+check('Lemosó permetezés sávok',()=>[0,20000,32000,44000,56000,63000].every((v,q)=>tierPrice(q,'wash')===v));
+check('Tört tartály: ellenőrzés szükséges',()=>calculateWorksheet(fixture({...base,maintenance_3:'1,5'})).total===null);
+check('Hiányzó ár nem nulla végösszeg',()=>calculateWorksheet(fixture({...base,construction_5:'2'})).total===null);
+check('Szöveges leírás nem számítási adat',()=>calculateWorksheet(fixture({...base,description:'bármi'})).total===28900);
+check('Hibás idő nem teljes elszámolás',()=>calculateWorksheet(fixture({...base,team_1_departure:'07:00'})).complete===false);
+check('Nulla csapat kihagyható',()=>calculateWorksheet(fixture({...base,team_2_size:'0',team_2_arrival:'00:00',team_2_departure:'00:00'})).complete===true);
+check('Javítás felváltja a régi munkalapot',()=>calculateProject([fixture(base),{...fixture({...base,team_1_departure:'11:20'}),updated_at:'2026-10-05T11:00:00Z'}],1190000).person_hours===5.4);
+check('140 főórás keret',()=>calculateProject([fixture(base)],1190000).budget_hours===140);
+check('Hiányzó keret nem nulla',()=>calculateProject([fixture(base)],null).remaining_hours===null);
+check('Régi ajánlati számítás változatlan',()=>calculateItem({quantity1:2,quantity2:3,unit2:'m',material_unit:100,labor_unit:200,other_cost:50,vat_rate:.27}).net===1850);
+const item={id:'geo',quantity1:20,unit1:'m2',labor_unit:800};
+const mapping={item_id:'geo',source_code:'maintenance_18',override_completed:null};
+check('Azonosítható mennyiség: 50%',()=>calculateProgress([item],[mapping],[fixture({...base,maintenance_18:10})]).percent===50);
+check('Javított mennyiség lecseréli az előzőt',()=>calculateProgress([item],[mapping],[fixture({...base,maintenance_18:10}),{...fixture({...base,maintenance_18:15}),updated_at:'2026-10-05T11:00:00Z'}]).percent===75);
+check('Kézi nulla felülírja az automatikus adatot',()=>calculateProgress([item],[{...mapping,override_completed:0}],[fixture({...base,maintenance_18:10})]).percent===0);
+check('Üres felülírás visszaállítja az automatikus adatot',()=>calculateProgress([item],[mapping],[fixture({...base,maintenance_18:10})]).percent===50);
+check('Hiányzó összerendelés nem kitalált százalék',()=>calculateProgress([item],[],[]).percent===null);
+check('Hibás tételmennyiség nem készültség',()=>calculateProgress([item],[mapping],[fixture({maintenance_18:'szöveg'})]).percent===null);
+check('Munkadíjjal súlyozott készültség',()=>calculateProgress([item,{id:'b',quantity1:20,labor_unit:2400}],[mapping,{item_id:'b',override_completed:20}],[fixture({maintenance_18:10})]).percent===87.5);
+check('Túlmennyiség legfeljebb 100%',()=>calculateProgress([item],[{...mapping,override_completed:30}],[]).percent===100);
+check('Nulla mennyiségű ajánlati sor nem blokkolja a sávot',()=>calculateProgress([item,{id:'zero',quantity1:0,labor_unit:800}],[{...mapping,override_completed:20}],[]).percent===100);
+document.querySelector('#result').textContent=JSON.stringify({passed:tests.filter(t=>t.ok).length,failed:tests.filter(t=>!t.ok).length,tests},null,2);
+</script></body></html>

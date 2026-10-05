@@ -1,0 +1,11 @@
+<!doctype html><html lang="hu"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../css/app.css"><link rel="stylesheet" href="../css/work-tracking.css"><title>Projektkövetés ellenőrzése</title><main class="container"><h1>Projektkövetés ellenőrzése</h1><div id="test"></div><div id="geller"></div><div id="not-started"></div><pre id="result"></pre></main><script type="module">
+import {renderProjectWorkTracking} from '../js/modules/project-work-tracking.js';
+import {calculateWorksheet} from '../js/modules/worksheet-calculator.js';
+const row={id:'teszt',work_date:'2026-10-05',updated_at:'2026-10-05T15:00:00Z',synced_at:'2026-10-05T15:00:00Z',form_data:{team_1_size:'2',team_1_arrival:'08:00',team_1_departure:'15:00',construction_3:'2'}};
+row.calculation=calculateWorksheet(row);
+renderProjectWorkTracking(document.querySelector('#test'),{name:'Teszt',started_on:'2026-10-05'},{records:[row],labor_budget:1190000,accepted_versions:1});
+renderProjectWorkTracking(document.querySelector('#geller'),{name:'Geller Ágnes',started_on:'2026-10-05'},{records:[],labor_budget:null,accepted_versions:0});
+renderProjectWorkTracking(document.querySelector('#not-started'),{started_on:null},{records:[row],labor_budget:1190000,accepted_versions:1});
+const checks={no_started_project_hidden:document.querySelector('#not-started').hidden,started_projects_visible:!document.querySelector('#test').hidden&&!document.querySelector('#geller').hidden,time_progress:document.querySelector('#test progress').value===10,missing_completion_visible:document.querySelector('#test').textContent.includes('Készültségi adat hiányzik'),missing_budget_visible:document.querySelector('#geller').textContent.includes('Nincs kiszámítható')};
+document.querySelector('#result').textContent=JSON.stringify(checks,null,2);
+</script></html>
