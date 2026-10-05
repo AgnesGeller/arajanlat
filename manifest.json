@@ -1,8 +1,8 @@
 {
   "name": "Díszkertek árajánlatkészítő",
-  "short_name": "Díszkertek",
+  "short_name": "Árajánlat",
   "lang": "hu",
-  "start_url": "./index.html",
+  "start_url": "/arajanlat/index.html",
   "display": "standalone",
   "background_color": "#354638",
   "theme_color": "#354638",
@@ -26,6 +26,6 @@
       "sizes": "512x512"
     }
   ],
-  "id": "./",
-  "scope": "./"
+  "id": "/arajanlat/",
+  "scope": "/arajanlat/"
 }
