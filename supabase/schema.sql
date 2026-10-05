@@ -61,7 +61,7 @@ create table if not exists public.quote_versions (
 );
 create table if not exists public.quote_items (
  id uuid primary key default gen_random_uuid(), version_id uuid not null references public.quote_versions(id) on delete cascade,
- position integer not null default 0, category text, subcategory text, name text not null, description text,
+ position integer not null default 0, catalog_id uuid references public.quote_price_catalog(id) on delete set null, category text, subcategory text, name text not null, description text,
  quantity1 numeric(14,3) not null default 1, unit1 text, quantity2 numeric(14,3), unit2 text,
  material_unit numeric(14,2) not null default 0, labor_unit numeric(14,2) not null default 0,
  other_cost numeric(14,2) not null default 0, vat_rate numeric(5,4) not null default 0 check(vat_rate between 0 and 1),

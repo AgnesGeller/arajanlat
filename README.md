@@ -32,7 +32,7 @@ A GC.hu növényárlista 9 oldaláról 519 egyedi cikkszám és nettó beszerzé
 
 A közös forrás a Kassza projekt `munkalap.customers` táblája, a kapcsolódó `customer_details` és `customer_locations` adatokkal. Ezt a forrást használja a Munkalap is. Az Árajánlat saját `quote_clients` táblával dolgozik; a közös ügyfél azonosítója a `source_customer_id`. A másik két alkalmazás kódja, sémája, belépése és jogosultságai változatlanok. Kizárólag a felhasználó által engedélyezett ügyféladatok olvasása, felvétele és frissítése történik.
 
-2026. október 1.: 108 közös ügyfél és 43 korábbi saját ügyfél, összesen 151 rekord. A korábbi ügyfelek és ajánlatkapcsolataik megmaradtak. A korábbi saját ügyfelek külön szűrhetők; csak kifejezett választással kerülnek a közös törzsbe vagy kapcsolhatók meglévő közös ügyfélhez. Az összekapcsolás megtartja az eredeti rekordot, és csak az Árajánlat projektjeinek ügyfélkapcsolatát vezeti át.
+2026. október 1.: 108 közös ügyfél és 43 korábbi saját ügyfél, összesen 151 rekord. A korábbi ügyfelek és ajánlatkapcsolataik megmaradtak. A napi ügyfélválasztó a közös ügyféllistát mutatja. A korábbi saját rekordok és projektkapcsolataik az adatbázisban megmaradnak; a technikai listaszűrők és eltéréskezelők nem jelennek meg a felületen. Az összekapcsolás megtartja az eredeti rekordot, és csak az Árajánlat projektjeinek ügyfélkapcsolatát vezeti át.
 
 A `quote-customer-sync` Edge Function érvényes saját Auth sessiont és `quote_staff` tagságot ellenőriz. A közös nevet, ügyféltípust, kapcsolattartót, emailt, telefonszámot, adószámot, megjegyzést és munkavégzési címeket szinkronizálja. A közös forrás pénzügyi mezőit nem írja. A számlázási cím kizárólag az Árajánlatban marad, mert a jelenlegi közös forrásban nincs hozzá külön mező.
 
@@ -62,4 +62,14 @@ Jóváhagyott Á arculat: az appikonok, favicon és linkmegosztási előnézet a
 
 A `quote_projects.id` UUID változatlan, ez a későbbi integráció állandó kulcsa. A `quote_project_codes.sql` az adatbázisban osztja ki az egyedi, változtathatatlan `PR-év-sorszám` projektszámot. A számláló tranzakcióbiztos és nem érhető el a kliensből; az év a budapesti idő szerint számítódik, a sorszám 9999 után tovább nő. A korábbi projektek időrendben kapnak számot, meglévő ajánlatkapcsolataik megmaradnak. A másik alkalmazások bekötése későbbi, külön jóváhagyandó feladat.
 
-Az ügyfélválasztó ügyfélneveket és címeket mutat; a keresés szűri a választékot. A régi bejegyzések listanézete a Műveletek részbe került. Több cím esetén a projektnél egy munkavégzési címet lehet választani vagy beírni. A projektszám megjelenik a belső projekt- és ajánlatnézetben, illetve az ezután közzétett ajánlatokon. A korábban elfogadott ajánlatok mentett tartalmát nem írjuk át.
+Az ügyfélválasztó ügyfélneveket és címeket mutat; a keresés szűri a választékot. A napi nézetből kikerültek a korábbi technikai listakezelők. Több cím esetén a projektnél egy munkavégzési címet lehet választani vagy beírni. A projektszám megjelenik a belső projekt- és ajánlatnézetben, illetve az ezután közzétett ajánlatokon. A korábban elfogadott ajánlatok mentett tartalmát nem írjuk át.
+
+## Frissítés és Excel-ellenőrzés – 2026. október 5.
+
+A fejléc Frissítés gombja a közös ügyfélszinkron mellett újratölti a projekteket, ajánlatokat, katalógust és sablonokat. Megőrzi a nyitott projektet és ajánlatváltozatot, befejezi a függőben lévő automatikus mentést, és ellenőrzi az app új verzióját. Nyitott űrlapot előbb menteni vagy bezárni kell. A frissítés idején a munkaterület nem szerkeszthető.
+
+A forrás Excel és az éles katalógus mind a 163 sora egyezik (a sortörés formátumát normalizálva): kategóriák, megnevezések, leírások, megjegyzések, két mértékegység, anyagár és munkadíj. A 3 összetevő, 185 részletező sor és 19 sablonsor is egyezik. Egy sabloncímben az eredeti kompossztal elírás komposzttal alakra lett javítva; a sablon tartalma változatlan. A 40 kalkulátorsorban azonos képletminta szerepel. A webes számítás az Excel 23 kitöltött sorának mentett anyag-, munkadíj-, nettó-, ÁFA- és bruttóértékével egyezett. Ez a meglévő munkafüzet mentett eredményeinek ellenőrzése, nem Excelben végzett újraszámítás.
+
+A tételszerkesztő kategóriaszűrőt kapott, az ajánlatsorok külön mutatják az anyagösszeget és munkadíjat. A quote_item_catalog_reference.sql kizárólag a quote_items táblába ad nullable katalógushivatkozást. A korábbi összegek és elfogadott ajánlatok változatlanok; régi sorokat nem kapcsolunk találgatással katalógushoz. A hozzá tartozó SQL-teszt visszagörgetett tranzakcióban igazolja a saját fiók mentését és a nem létező katalógustétel elutasítását.
+
+Az időpontfoglaló és a foglaláskor, illetve előtte 2–3 órával küldött értesítés még nincs megvalósítva. Az ERP többi moduljába a projektszám bekötése szintén későbbi feladat. A Munkalap és Kassza kódja, adatbázissémája, Authja és jogosultságai ebben a kiadásban nem változtak.
