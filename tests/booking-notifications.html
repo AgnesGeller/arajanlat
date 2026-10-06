@@ -7,6 +7,7 @@ await check('Már elküldött foglalás nem kap új emailt',()=>!needsBookingEma
 let request,source;
 await check('FormSubmit címzett és foglalásazonosító',async()=>{await sendBookingEmail({id:'helyi-proba'},'Foglalás','Projekt',async(url,options)=>{request={url,...JSON.parse(options.body)};source=options.headers.Referer;return {ok:true,json:async()=>({success:'true',message:'Thanks!'})};});return request.url==='https://formsubmit.co/ajax/info@diszkertek.hu'&&request['Foglalás azonosítója']==='helyi-proba';});
 await check('A szerver az Árajánlat saját webcímét adja meg',()=>source==='https://agnesgeller.github.io/arajanlat/index.html');
+await check('Szerveres email nem vár interaktív CAPTCHA-ra',()=>request._captcha==='false');
 await check('HTTP hiba nem sikeres küldés',async()=>{try{await sendBookingEmail({id:'helyi'},'Próba','',async()=>({ok:false}));return false;}catch{return true;}});
 await check('Aktiválási válasz nem sikeres küldés',async()=>{try{await sendBookingEmail({id:'helyi'},'Próba','',async()=>({ok:true,json:async()=>({success:'true',message:'Please activate your form'})}));return false;}catch{return true;}});
 await check('Hibás JSON nem sikeres küldés',async()=>{try{await sendBookingEmail({id:'helyi'},'Próba','',async()=>({ok:true,json:async()=>{throw Error('JSON');}}));return false;}catch{return true;}});

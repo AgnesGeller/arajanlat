@@ -6,7 +6,7 @@ export async function sendBookingEmail(event, title, body, transport = fetch) {
   // Identify the real application whose booking this server worker delivers.
   headers: {'Content-Type': 'application/json', Accept: 'application/json',
    Referer: 'https://agnesgeller.github.io/arajanlat/index.html'},
-  body: JSON.stringify({_subject: `Díszkertek – ${title}`, _template: 'table',
+  body: JSON.stringify({_subject: `Díszkertek – ${title}`, _template: 'table', _captcha: 'false',
    'Értesítés': title, 'Projekt és időpont': body, 'Foglalás azonosítója': event.id,
    'Megnyitás': 'https://agnesgeller.github.io/arajanlat/index.html'}),
   signal: AbortSignal.timeout(10000)
