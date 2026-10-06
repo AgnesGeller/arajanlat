@@ -7,7 +7,7 @@ import { mountPriceSources } from './modules/price-sources.js';
 import { mountAppointments } from './modules/appointments.js';
 import { db, configured, rows, rpc } from './services/supabase-service.js';
 import { STAFF_ACCOUNTS, SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { offerEmail, composeEmail } from './services/email-service.js';
+import { clientEmail, emailHandoffHtml, mountEmailHandoff } from './modules/email-handoff.js';
 import { calculateItem, calculateTotal, money, dateTime } from './modules/quote-calculator.js';
 
 const $ = s => document.querySelector(s);
@@ -177,10 +177,10 @@ async function createToken(projectId,versionId,purpose,email='',number=''){try{
  let token;
  if(purpose==='request'){token=await rpc('quote_request_link_create',{p_project:projectId})}
  else{const bytes=crypto.getRandomValues(new Uint8Array(32));token=Array.from(bytes,x=>x.toString(16).padStart(2,'0')).join('');const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token))),x=>x.toString(16).padStart(2,'0')).join('');await save('quote_public_tokens',{project_id:projectId,version_id:versionId,purpose,token_hash:hash,expires_at:new Date(Date.now()+30*86400000).toISOString()});}
- const link=new URL('client.html',location.href);link.searchParams.set('token',token);const url=link.href;
- formDialog(purpose==='request'?'Ügyfél adatbekérő küldése':'Biztonságos ügyféllink',`<p>A link 30 napig érvényes.${purpose==='request'?' Az adatbekérő egyszer küldhető be; további adatokhoz készíts új linket.':''} Csak azzal oszd meg, akinek szól.</p><label>Link<input id="generated-link" value="${esc(url)}" readonly></label><div class="toolbar"><a class="secondary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${purpose==='request'?'Adatbekérő megnyitása':'Ajánlat megnyitása'}</a><button type="button" id="copy-link" class="secondary">Link másolása</button><button type="button" id="email-link" class="secondary">Emailprogram megnyitása</button>${navigator.share?'<button type="button" id="share-link" class="secondary">Link megosztása</button>':''}</div><p class="muted">Az emailprogramban ellenőrizd a címzettet, majd küldd el a levelet. Ha nincs beállított emailprogram, másold ki a linket és illeszd be a leveledbe.</p>`,async()=> 'A link elkészült, másolható vagy elküldhető.','Kész');
+ const link=new URL('client.html',location.href);link.searchParams.set('token',token);const url=link.href;const emailDraft=clientEmail(purpose,url,number);
+ formDialog(purpose==='request'?'Ügyfél adatbekérő küldése':'Biztonságos ügyféllink',`<p>A link 30 napig érvényes.${purpose==='request'?' Az adatbekérő egyszer küldhető be; további adatokhoz készíts új linket.':''} Csak azzal oszd meg, akinek szól.</p><label>Link<input id="generated-link" value="${esc(url)}" readonly></label><div class="toolbar"><a class="secondary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${purpose==='request'?'Adatbekérő megnyitása':'Ajánlat megnyitása'}</a><button type="button" id="copy-link" class="secondary">Link másolása</button>${navigator.share?'<button type="button" id="share-link" class="secondary">Link megosztása</button>':''}</div>${emailHandoffHtml(email,emailDraft)}`,async()=> 'A link elkészült, másolható vagy elküldhető.','Kész');
  $('#copy-link').onclick=async()=>{try{await navigator.clipboard.writeText(url);status('Link másolva.')}catch{const input=$('#generated-link');input.focus();input.select();status('Másold ki a kijelölt linket.')}};
- $('#email-link').onclick=()=>purpose==='offer'?offerEmail(email,number,url):composeEmail({to:email,subject:'Díszkertek – projektadatok',body:['Kedves Ügyfelünk!','','Kérjük, töltse ki az adatbekérőt:',url,'','Üdvözlettel:','Díszkertek'].join('\n')});
+ mountEmailHandoff($('#email-handoff'));
  const share=$('#share-link');if(share)share.onclick=async()=>{try{await navigator.share({title:'Díszkertek – '+(purpose==='request'?'adatbekérő':'árajánlat'),url})}catch(error){if(error.name!=='AbortError')status('A megosztás nem sikerült. Másold ki a linket.',true)}};
  if(purpose==='offer'){const {error}=await db.from('quote_timeline').insert({project_id:projectId,event:'Ajánlati link létrehozva'});if(error)throw error}
  status('A link elkészült, másolható vagy elküldhető.');

@@ -1,0 +1,20 @@
+<!doctype html><html lang="hu"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Email megosztás ellenőrzése</title><link rel="stylesheet" href="../css/app.css"><main class="container" style="max-width:650px"><h1>Email megosztás ellenőrzése</h1><pre id="results"></pre><form id="fixture"></form></main><script type="module">
+import {clientEmail,emailLinks,emailHandoffHtml,mountEmailHandoff} from '../js/modules/email-handoff.js?test=1';
+const link='https://example.org/client.html?token=teszt&value=Ági',draft=clientEmail('request',link),fixture=document.querySelector('#fixture');
+fixture.innerHTML=emailHandoffHtml('teszt@example.org',draft);mountEmailHandoff(fixture);
+let passed=0,failed=0;const check=(name,fn)=>{try{if(!fn())throw Error('Eltérő eredmény');passed++;document.querySelector('#results').textContent+='OK '+name+'\n'}catch(e){failed++;document.querySelector('#results').textContent+='HIBA '+name+'\n'}};
+const all=emailLinks({to:' ági@example.org ',subject:draft.subject,body:draft.body}),mail=new URL(all.mailto),gmail=new URL(all.gmail),outlook=new URL(all.outlook);
+check('Adatbekérő eredeti linkje megmarad',()=>draft.body.includes(link));
+check('Tárgy ékezetei megmaradnak',()=>mail.searchParams.get('subject')===draft.subject);
+check('Levélszöveg és sortörések megmaradnak',()=>mail.searchParams.get('body')===draft.body);
+check('Címzett körüli szóköz törlődik',()=>decodeURIComponent(mail.pathname)==='ági@example.org');
+check('Gmail eredeti mailto teljes tartalommal',()=>gmail.hostname==='accounts.google.com'&&new URL(gmail.searchParams.get('continue')).searchParams.get('url')===all.mailto);
+check('Microsoft 365 címzett, tárgy, szöveg',()=>outlook.searchParams.get('to')==='ági@example.org'&&outlook.searchParams.get('subject')===draft.subject&&outlook.searchParams.get('body')===draft.body);
+check('Outlook.com külön saját webcím',()=>new URL(all.personal).hostname==='outlook.live.com');
+check('Ajánlati levél is a saját linket használja',()=>clientEmail('offer',link,'DK-123').subject.includes('DK-123')&&clientEmail('offer',link,'DK-123').body.includes(link));
+const subject=fixture.querySelector('#email-subject');subject.value='Módosított tárgy & részletek';subject.dispatchEvent(new Event('input'));
+check('Tárgy szerkesztése frissíti a levélhivatkozásokat',()=>new URL(fixture.querySelector('[data-email-provider="outlook"]').href).searchParams.get('subject')===subject.value);
+const recipient=fixture.querySelector('#email-recipient');recipient.value='rossz-cím';
+check('Hibás emailcím felismerhető',()=>!recipient.checkValidity());recipient.value='teszt@example.org';recipient.dispatchEvent(new Event('input'));subject.value=draft.subject;subject.dispatchEvent(new Event('input'));
+document.querySelector('#results').textContent+=`\n${passed} sikeres, ${failed} hibás ellenőrzés.`;
+</script></html>
