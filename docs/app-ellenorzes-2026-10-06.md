@@ -9,6 +9,7 @@
 - Felhasznált vagy lejárt link állapotát csak a linkhez tartozó ügyfél sikeres azonosítása után jelzi a szerver. Hibás azonosítás nem fed fel állapotot vagy ügyféladatot.
 - A linket létrehozó ablakból közvetlenül megnyitható az adatbekérő. A „Kész” gomb és az „Emailprogram megnyitása” felirat pontosan jelzi a működést; az emailt a megnyíló emailprogramban kell elküldeni.
 - A már használt Supabase SDK azonos, rögzített 2.58.0 változata helyi fájlból töltődik, és bekerül az Árajánlat saját PWA-gyorsítótárába. Új függőség nincs.
+- A kilépés csak az adott eszköz Árajánlat-munkamenetét zárja le. Már megszűnt session esetén is visszaáll a belépőképernyő; nem marad ott használhatatlan belső nézet.
 - A foglalási email a Munkalap meglévő mintájának megfelelő `_captcha: false` paramétert is elküldi. Új tesztlevél engedély nélkül nem indul.
 
 ## Eredmények
