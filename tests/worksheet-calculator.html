@@ -34,5 +34,8 @@ check('Hibás tételmennyiség nem készültség',()=>calculateProgress([item],[
 check('Munkadíjjal súlyozott készültség',()=>calculateProgress([item,{id:'b',quantity1:20,labor_unit:2400}],[mapping,{item_id:'b',override_completed:20}],[fixture({maintenance_18:10})]).percent===87.5);
 check('Túlmennyiség legfeljebb 100%',()=>calculateProgress([item],[{...mapping,override_completed:30}],[]).percent===100);
 check('Nulla mennyiségű ajánlati sor nem blokkolja a sávot',()=>calculateProgress([item,{id:'zero',quantity1:0,labor_unit:800}],[{...mapping,override_completed:20}],[]).percent===100);
+check('Törölt munkalap nélkül nulla főóra és munkadíj',()=>{const result=calculateProject([],1190000);return result.person_hours===0&&result.labor===0&&result.remaining_hours===140;});
+check('Törölt munkalap mennyisége nem ad automatikus készültséget',()=>calculateProgress([item],[mapping],[]).percent===0);
+check('Kézi készültség munkalaptörlés után is megmarad',()=>calculateProgress([item],[{...mapping,override_completed:10}],[]).percent===50);
 document.querySelector('#result').textContent=JSON.stringify({passed:tests.filter(t=>t.ok).length,failed:tests.filter(t=>!t.ok).length,tests},null,2);
 </script></body></html>

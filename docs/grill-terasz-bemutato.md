@@ -52,8 +52,9 @@ A Munkalap appban ugyanaz az ügyfél és cím választandó.
 Az elindult projekt kiválasztható, a két sáv a mentett adatok alapján jelenik meg.
 Az opcionális projektlekérés hibája nem akadályozza a munkalap elküldését.
 
-Az alábbi négy **új bemutató munkalap már rögzítve van**, a felhasználó jóváhagyásával.
-A meglévő munkalapok változatlanok. A tesztnapok október 5–8.
+A négy bemutató munkalapot a felhasználó időközben törölte a Munkalap appból.
+Az Árajánlatban az inaktív másolatok megmaradtak, de az aktuális elszámolásban
+nem szerepelnek. Az alábbi október 5–8-i adatok kizárólag korábbi bemutatási példák.
 
 | Lépés | Létszám és idő | Új főóra | Összes főóra | Keret felhasználása |
 |---|---|---:|---:|---:|
@@ -93,7 +94,9 @@ A 8 500 Ft/főóra alapján számított értéket nem nevezzük kifizetett munka
 
 Az Árajánlat saját belépése szükséges. A lépésválasztóval vagy az Előző/Következő
  gombokkal az egész folyamat bejárható. Az oldal csak olvas, nem küld emailt.
-A javítási lépés csak számítási előnézet; a negyedik munkalap 11:00-s távozása megmaradt.
+A javítási lépés csak számítási előnézet. A korábbi munkanapok az inaktív
+Árajánlat-másolatokból olvashatók; új Munkalap-rekord nem készül. A lezárási
+lépés külön mutatja az aktuális elszámolást (0 aktív tesztmunkalap) és a korábbi eredményt.
 A projektben a **Bemutató végigjátszása** gomb is ide vezet.
 
 ## Ellenőrizve

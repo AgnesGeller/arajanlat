@@ -1,7 +1,7 @@
 <!doctype html><html lang="hu"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../integration/munkalap-project-tracking.css"><title>Munkalap projektkövetés ellenőrzése</title><main><h1>Munkalap projektkövetés ellenőrzése</h1><form id="worksheetForm"><section class="worktime"><label>Ügyfél<input name="customerName" value="Geller Ágnes"></label><label>Cím<input name="address" value="Teszt utca 1"></label><button>Beküldés ellenőrzése</button></section></form><pre id="result"></pre></main>
 <script>
 let responses=[],fail=false,submits=0;
-window.MunkalapProjectContext=()=>({signedIn:true,customer_id:'teszt',address:'teszt',work_date:'2026-10-05'});
+window.MunkalapProjectContext=()=>({signedIn:true,customer_id:document.querySelector('[name="customerName"]').value==='Geller Ágnes'?'teszt':null,address:document.querySelector('[name="address"]').value,work_date:'2026-10-05'});
 window.MunkalapDB={projectAccessToken:async()=>'helyi-teszt'};
 window.fetch=async()=>{if(fail)throw Error('Helyi hálózati próba');return {ok:true,json:async()=>({projects:responses})};};
 document.querySelector('form').addEventListener('submit',e=>{e.preventDefault();submits++;});
@@ -16,6 +16,15 @@ document.querySelector('form').addEventListener('submit',e=>{e.preventDefault();
  fail=true;document.querySelector('[data-project-refresh]').click();await new Promise(r=>setTimeout(r,100));
  document.querySelector('form').requestSubmit();checks.failure_does_not_block_submit=submits===1;
  checks.error_visible=document.querySelector('.quote-project-tracking').textContent.includes('továbbra is elküldhető');
+ fail=false;
+ const address=document.querySelector('[name="address"]');address.value='';address.dispatchEvent(new Event('input',{bubbles:true}));
+ checks.cleared_address_hides_immediately=document.querySelector('.quote-project-tracking').hidden&&new FormData(document.querySelector('form')).get('quote_project_id')==='';
+ address.value='Teszt utca 1';address.dispatchEvent(new Event('change',{bubbles:true}));await new Promise(r=>setTimeout(r,100));
+ let finish;window.fetch=()=>new Promise(resolve=>{finish=resolve;});
+ document.querySelector('[data-project-refresh]').click();await new Promise(r=>setTimeout(r,100));
+ const name=document.querySelector('[name="customerName"]');name.value='Másik teszt';name.dispatchEvent(new Event('input',{bubbles:true}));
+ finish({ok:true,json:async()=>({projects:responses})});await new Promise(r=>setTimeout(r,100));
+ checks.old_response_cannot_restore_project=document.querySelector('.quote-project-tracking').hidden&&new FormData(document.querySelector('form')).get('quote_project_id')==='';
  document.querySelector('#result').textContent=JSON.stringify(checks,null,2);
 })();
 </script></html>
