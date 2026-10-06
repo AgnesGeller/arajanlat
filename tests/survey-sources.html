@@ -1,0 +1,28 @@
+<!doctype html><html lang="hu"><meta charset="utf-8"><title>Felmérés és árforrások ellenőrzése</title><h1>Felmérés és árforrások ellenőrzése</h1><pre id="results"></pre><div id="fixture" hidden></div><script type="module">
+import {irrigationTotals,robotRounding} from '../js/modules/source-calculator.js';
+import {requestDimensionFields,mountRequestWorkFields} from '../js/modules/request-fields.js';
+import {surveyRecord} from '../js/modules/site-survey.js';
+let passed=0,failed=0;const out=document.querySelector('#results');
+const test=(name,fn)=>{try{fn();passed++;out.textContent+='OK '+name+'\n'}catch(e){failed++;out.textContent+='HIBA '+name+': '+e.message+'\n'}};
+const assert=(value)=>{if(!value)throw Error('Az eredmény eltér a várttól.');};
+const packages=await fetch('./source-fixtures.json').then(r=>r.json()),irrigation=packages[0];
+test('Excel teljes költség és minimum–maximum',()=>{const t=irrigationTotals(irrigation);assert(t.base===1405000&&t.low===1045000&&t.high===1111000)});
+test('Levonás nélkül az eredeti költség marad',()=>{const t=irrigationTotals(irrigation,[]);assert(t.low===1405000&&t.high===1405000)});
+test('Egyetlen kiválasztott levonás',()=>{const t=irrigationTotals(irrigation,[0]);assert(t.low===1345000&&t.high===1351000)});
+test('Az öt mágnesszelep ára sorösszeg',()=>assert(irrigation.lines[5].quantity===5&&irrigation.lines[5].material===90000&&irrigation.lines[5].total===195000));
+const expected=[1325600,1829790,1226790,1374180];
+packages.slice(1).forEach((p,i)=>test('Robot '+(i+1)+' eredeti végösszegek és kerekítés',()=>{assert(p.total_gross===expected[i]);assert(p.quote_lines.reduce((s,r)=>s+r.original_gross,0)===p.total_gross);assert(p.quote_lines.reduce((s,r)=>s+r.material_net+r.labor_net,0)===p.total_net);assert(Math.abs(robotRounding(p))<1)}));
+const fixture=document.querySelector('#fixture');fixture.innerHTML=`<form><select name="work_type"><option value="">Válasszon</option><option>Füvesítés</option><option>Öntözőrendszer</option><option>Növénytelepítés</option></select>${requestDimensionFields()}</form>`;
+const form=fixture.querySelector('form'),select=form.elements.work_type;mountRequestWorkFields(form);
+const change=value=>{select.value=value;select.dispatchEvent(new Event('change'))};
+test('Munka kiválasztása előtt nincs aktív méretmező',()=>assert(!new FormData(form).has('area_m2')));
+test('Öntözés saját kérdései aktívak',()=>{change('Öntözőrendszer');assert(!form.elements.existing_valves.disabled&&form.elements.width_m.disabled)});
+test('Más munka nem küld rejtett öntözési adatot',()=>{form.elements.existing_valves.value='3';change('Füvesítés');assert(!new FormData(form).has('existing_valves')&&new FormData(form).has('width_m'))});
+test('Visszaváltás megőrzi a korábbi mezőértéket',()=>{change('Öntözőrendszer');assert(new FormData(form).get('existing_valves')==='3')});
+const entry={kind:'measurement',name:' Szélesség ',quantity:'2.5',unit:'m',quantity2:'3',unit2:'m',note:' mérés '};
+test('Felmérés két mértékegységgel és megjegyzéssel',()=>{const r=surveyRecord(entry,'project');assert(r.quantity===2.5&&r.quantity2===3&&r.name==='Szélesség'&&r.note==='mérés')});
+test('Nulla mennyiség megengedett',()=>assert(surveyRecord({...entry,quantity:'0'},'project').quantity===0));
+test('Mértékegység hiánya nem menthető',()=>{let rejected=false;try{surveyRecord({...entry,unit2:''},'project')}catch{rejected=true}assert(rejected)});
+test('Negatív mennyiség nem menthető',()=>{let rejected=false;try{surveyRecord({...entry,quantity:'-1'},'project')}catch{rejected=true}assert(rejected)});
+out.textContent+=`\n${passed} sikeres, ${failed} hibás ellenőrzés.`;document.documentElement.dataset.testResult=failed?'failed':'passed';
+</script></html>

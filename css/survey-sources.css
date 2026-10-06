@@ -1,0 +1,16 @@
+.source-section{margin-top:1.5rem;border-top:2px solid var(--sage)}
+.source-section summary{min-height:44px;padding:.4rem 0}
+.source-table-wrap{max-width:100%;overflow:auto;margin:1rem 0;border:1px solid var(--line)}
+.source-table{border-collapse:collapse;width:100%;min-width:580px;font-size:.9rem}
+.source-table th,.source-table td{text-align:left;padding:.65rem;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.source-table th{background:var(--sand)}
+.source-values{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem}
+.source-values dd{margin:0;font-weight:600}.source-values dt{color:var(--muted)}
+.survey-list article{padding:1rem 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.survey-list p{white-space:pre-wrap}.survey-list button{min-height:44px;background:transparent;border:1px solid var(--line);padding:.5rem .75rem}
+.survey-photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem}
+.survey-photos figure{margin:0;min-width:0}.survey-photos img{width:100%;max-height:200px;object-fit:contain}
+.survey-photos figcaption{overflow-wrap:anywhere;font-size:.85rem}
+.source-section .check-label{display:block}.source-section .check-label input{width:auto;min-height:auto;margin-right:.5rem}.source-section .check-label small{display:block;margin-left:1.5rem}
+@media(max-width:650px){.source-section .grid{grid-template-columns:1fr}.source-table{min-width:520px}.source-section button{min-height:44px}.source-values{grid-template-columns:1fr}}
+@media print{.source-section{display:none!important}}
