@@ -54,7 +54,7 @@ declare c jsonb:=current_setting('quote.test')::jsonb; a public.quote_appointmen
 begin
  select * into a from public.quote_appointments where project_id=(c->>'p1')::uuid and status='booked';
  if (select count(*) from public.quote_appointment_events where appointment_id=a.id)<>2 then raise exception 'Booking/reminder not queued'; end if;
- if not exists(select 1 from public.quote_appointment_events e join public.quote_appointment_slots slot on slot.id=a.slot_id where e.appointment_id=a.id and kind='reminder' and e.due_at=slot.starts_at-interval '1 hour') then raise exception 'Reminder offset wrong'; end if;
+ if not exists(select 1 from public.quote_appointment_events e join public.quote_appointment_slots slot on slot.id=a.slot_id where e.appointment_id=a.id and kind='reminder' and e.due_at=slot.starts_at-interval '2 hours') then raise exception 'Reminder offset wrong'; end if;
  select * into s from public.quote_appointment_slots where id=a.slot_id;
  begin
   perform public.quote_appointment_slot_save(s.id,s.starts_at+interval '1 hour',s.ends_at+interval '1 hour',false,s.updated_at);raise exception 'Booked slot edited';

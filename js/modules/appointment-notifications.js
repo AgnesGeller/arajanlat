@@ -1,6 +1,6 @@
 import { rows, rpc } from '../services/supabase-service.js';
 import { dateTime } from './quote-calculator.js';
-const titles={booked:'Új találkozófoglalás',cancelled:'Találkozó lemondva',reminder:'Találkozó 1 órán belül',phone:'Telefonos időpont-egyeztetés'};
+const titles={booked:'Új találkozófoglalás',cancelled:'Találkozó lemondva',reminder:'Találkozó 2 órán belül',phone:'Telefonos időpont-egyeztetés'};
 let timer, activeUser, running=false;
 const box=()=>document.querySelector('#appointment-notifications');
 async function subscription() {return (await navigator.serviceWorker.getRegistration())?.pushManager?.getSubscription();}
@@ -30,6 +30,7 @@ async function poll() {
   ]);
   if(user!==activeUser)return;
   const unread=events.filter(e=>!seen.some(s=>s.event_id===e.id));
+  if(events.some(e=>e.kind==='booked'&&!e.email_sent_at&&e.last_error))box().querySelector('[data-notification-status]').textContent='Egy foglalási email küldése nem sikerült. A rendszer újrapróbálja; a push riasztás ettől függetlenül működik.';
   box().querySelector('[data-notification-count]').textContent=unread.length?`Értesítések (${unread.length} új)`:'Értesítések';
   const list=box().querySelector('[data-notification-list]');list.replaceChildren();
   if(!unread.length){const p=document.createElement('p');p.textContent='Nincs új foglalási értesítés.';list.append(p);}
@@ -46,7 +47,7 @@ export function startAppointmentNotifications(userId) {
  clearInterval(timer);activeUser=userId;
  if(!box())return;
  if(!userId){box().replaceChildren();return;}
- box().innerHTML='<details><summary data-notification-count>Értesítések</summary><div class="toolbar"><button type="button" class="secondary" data-enable-notifications>Riasztás bekapcsolása ezen az eszközön</button><button type="button" class="text-btn" data-disable-notifications>Riasztás kikapcsolása ezen az eszközön</button><button type="button" class="text-btn" data-refresh-notifications>Értesítések frissítése</button></div><p class="muted" data-notification-status role="status"></p><div data-notification-list></div></details>';
+ box().innerHTML='<details><summary data-notification-count>Értesítések</summary><div class="toolbar"><button type="button" class="secondary" data-enable-notifications>Riasztás bekapcsolása ezen az eszközön</button><button type="button" class="text-btn" data-disable-notifications>Riasztás kikapcsolása ezen az eszközön</button><button type="button" class="text-btn" data-refresh-notifications>Értesítések frissítése</button></div><p class="muted">A találkozó előtt 2 órával automatikus riasztást küldünk. Foglaláskor email is érkezik az irodába.</p><p class="muted" data-notification-status role="status"></p><div data-notification-list></div></details>';
  box().querySelector('[data-enable-notifications]').onclick=enable;
  box().querySelector('[data-refresh-notifications]').onclick=poll;
  box().querySelector('[data-disable-notifications]').onclick=async()=>{const user=activeUser;try{await stopAppointmentNotifications();startAppointmentNotifications(user);box().querySelector('details').open=true;box().querySelector('[data-notification-status]').textContent='A riasztást kikapcsoltuk ezen az eszközön.';}catch{box().querySelector('[data-notification-status]').textContent='A riasztás kikapcsolása nem sikerült. Próbáld újra.';}};

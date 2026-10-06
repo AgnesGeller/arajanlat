@@ -1,0 +1,14 @@
+<!doctype html><html lang="hu"><meta charset="utf-8"><title>Foglalási email ellenőrzése</title><h1>Foglalási email ellenőrzése</h1><pre id="result"></pre><script type="module">
+import {needsBookingEmail,sendBookingEmail} from '../supabase/functions/quote-appointment-notify/booking-email.js';
+const results=[];
+async function check(name,fn){try{if(!await fn())throw Error('Eltérő eredmény');results.push({name,ok:true});}catch(error){results.push({name,ok:false,error:error.message});}}
+await check('Csak foglalás kap emailt',()=>['reminder','cancelled','phone'].every(kind=>!needsBookingEmail({kind}))&&needsBookingEmail({kind:'booked'}));
+await check('Már elküldött foglalás nem kap új emailt',()=>!needsBookingEmail({kind:'booked',email_sent_at:'2026-10-06'}));
+let request,source;
+await check('FormSubmit címzett és foglalásazonosító',async()=>{await sendBookingEmail({id:'helyi-proba'},'Foglalás','Projekt',async(url,options)=>{request={url,...JSON.parse(options.body)};source=options.headers.Referer;return {ok:true,json:async()=>({success:'true',message:'Thanks!'})};});return request.url==='https://formsubmit.co/ajax/info@diszkertek.hu'&&request['Foglalás azonosítója']==='helyi-proba';});
+await check('A szerver az Árajánlat saját webcímét adja meg',()=>source==='https://agnesgeller.github.io/arajanlat/index.html');
+await check('HTTP hiba nem sikeres küldés',async()=>{try{await sendBookingEmail({id:'helyi'},'Próba','',async()=>({ok:false}));return false;}catch{return true;}});
+await check('Aktiválási válasz nem sikeres küldés',async()=>{try{await sendBookingEmail({id:'helyi'},'Próba','',async()=>({ok:true,json:async()=>({success:'true',message:'Please activate your form'})}));return false;}catch{return true;}});
+await check('Hibás JSON nem sikeres küldés',async()=>{try{await sendBookingEmail({id:'helyi'},'Próba','',async()=>({ok:true,json:async()=>{throw Error('JSON');}}));return false;}catch{return true;}});
+document.querySelector('#result').textContent=JSON.stringify({passed:results.filter(r=>r.ok).length,failed:results.filter(r=>!r.ok).length,results},null,2);
+</script></html>

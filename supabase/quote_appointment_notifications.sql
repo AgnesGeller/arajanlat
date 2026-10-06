@@ -46,9 +46,9 @@ begin
  if tg_op='INSERT' and new.status='booked' then
   insert into public.quote_appointment_events(company_id,project_id,appointment_id,kind,due_at,expires_at)
    values(new.company_id,new.project_id,new.id,'booked',now(),s.starts_at);
-  if s.starts_at>now()+interval '1 hour' then
+  if s.starts_at>now()+interval '2 hours' then
    insert into public.quote_appointment_events(company_id,project_id,appointment_id,kind,due_at,expires_at)
-    values(new.company_id,new.project_id,new.id,'reminder',s.starts_at-interval '1 hour',s.starts_at);
+    values(new.company_id,new.project_id,new.id,'reminder',s.starts_at-interval '2 hours',s.starts_at);
   end if;
  elsif tg_op='UPDATE' and old.status='booked' and new.status='cancelled' then
   update public.quote_appointment_events set cancelled=true where appointment_id=new.id and kind in ('booked','reminder');
@@ -118,7 +118,7 @@ end $$;
 create function public.quote_notification_claim() returns setof public.quote_appointment_events language sql security definer set search_path='' as $$
  update public.quote_appointment_events set lease_until=now()+interval '2 minutes'
  where id in (select id from public.quote_appointment_events where not cancelled and due_at<=now() and expires_at>now() and next_attempt_at<=now()
-  and (lease_until is null or lease_until<now()) and (email_sent_at is null or push_done_at is null) order by due_at limit 10 for update skip locked)
+  and (lease_until is null or lease_until<now()) and ((kind='booked' and email_sent_at is null) or push_done_at is null) order by due_at limit 10 for update skip locked)
  returning *
 $$;
 create function public.quote_push_delivery_done(p_event uuid,p_subscription uuid) returns boolean language sql security definer set search_path='' as $$

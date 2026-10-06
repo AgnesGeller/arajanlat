@@ -1,10 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.58.0';
 import webpush from 'npm:web-push@3.6.7';
+import {needsBookingEmail, sendBookingEmail} from './booking-email.js';
 
 const client = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {auth:{persistSession:false,autoRefreshToken:false}});
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {status,headers:{'Content-Type':'application/json'}});
 const rpc = async (name: string,args={}) => {const {data,error}=await client.rpc(name,args);if(error)throw error;return data;};
-const titles: Record<string,string> = {booked:'Új találkozófoglalás',cancelled:'Találkozó lemondva',reminder:'Találkozó 1 órán belül',phone:'Telefonos időpont-egyeztetés'};
+const titles: Record<string,string> = {booked:'Új találkozófoglalás',cancelled:'Találkozó lemondva',reminder:'Találkozó 2 órán belül',phone:'Telefonos időpont-egyeztetés'};
 const date = (value: string) => new Intl.DateTimeFormat('hu-HU',{dateStyle:'long',timeStyle:'short',timeZone:'Europe/Budapest'}).format(new Date(value));
 
 Deno.serve(async request => {
@@ -21,10 +22,15 @@ Deno.serve(async request => {
    const receiver=webpush.generateVAPIDKeys();
    const auth=btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
    const encrypted=webpush.generateRequestDetails({endpoint:'https://fcm.googleapis.com/fcm/send/quote-self-check',keys:{p256dh:receiver.publicKey,auth}},'Árajánlat értesítési ellenőrzés',{vapidDetails:{subject:'mailto:info@diszkertek.hu',...keys}});
+   if(input.email_check===true){
+    try {
+     await sendBookingEmail({id:crypto.randomUUID()},'Árajánlat – technikai emailpróba','Ez egy jóváhagyott technikai próba. Nem történt foglalás, és nincs hozzá találkozó.');
+     return json({self_check:true,email_accepted:true});
+    }catch(error){return json({self_check:true,email_accepted:false,error:error instanceof Error?error.message:'Az emailpróba nem sikerült.'},502);}
+   }
    return json({self_check:true,encryption_ok:encrypted.body.length>0,authorization_ok:Boolean(encrypted.headers.Authorization)});
   }
   const events=await rpc('quote_notification_claim');
-  const apiKey=Deno.env.get('RESEND_API_KEY');
   let emails=0,pushes=0;
   for(const event of events){
    // Recheck after claiming: a cancellation invalidates the old reminder.
@@ -38,13 +44,11 @@ Deno.serve(async request => {
    const body=`${project.project_code} – ${project.name}${startsAt?'\nIdőpont: '+date(startsAt):''}`;
    const patch: Record<string,unknown>={lease_until:null,next_attempt_at:new Date(Date.now()+5*60_000).toISOString(),last_error:null};
    const errors: string[]=[];
-   if(!event.email_sent_at){
-    if(!apiKey)errors.push('Az automatikus emailküldés nincs beállítva.');
-    else try {
-     const response=await fetch('https://api.resend.com/emails',{method:'POST',redirect:'error',headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json','Idempotency-Key':`quote-appointment-${event.id}`},body:JSON.stringify({from:Deno.env.get('QUOTE_EMAIL_FROM')||'Díszkertek <ertesites@diszkertek.hu>',to:['info@diszkertek.hu'],subject:`Díszkertek – ${title}`,text:`${title}\n\n${body}\n\nMegnyitás: https://agnesgeller.github.io/arajanlat/index.html`}),signal:AbortSignal.timeout(10000)});
-     if(!response.ok)throw Error(`Email HTTP ${response.status}`);
+   if(needsBookingEmail(event)){
+    try {
+     await sendBookingEmail(event,title,body);
      patch.email_sent_at=new Date().toISOString();emails++;
-    }catch {errors.push('Az emailküldés nem sikerült; újrapróbáljuk.');}
+    }catch(error) {errors.push(error instanceof Error?error.message:'Az emailküldés nem sikerült; újrapróbáljuk.');}
    }
    if(!event.push_done_at){
     const {data:staff,error:staffError}=await client.from('quote_staff').select('user_id').eq('company_id',event.company_id);
@@ -68,6 +72,6 @@ Deno.serve(async request => {
    patch.last_error=errors.join(' ')||null;
    const {error}=await client.from('quote_appointment_events').update(patch).eq('id',event.id);if(error)throw error;
   }
-  return json({processed:events.length,emails,pushes,email_configured:Boolean(apiKey)});
+  return json({processed:events.length,emails,pushes,email_provider:'formsubmit',reminder_hours:2});
  }catch {console.error('quote_appointment_notify_failed');return json({error:'Notification processing failed'},500);}
 });
