@@ -1,0 +1,4 @@
+<!doctype html><html lang="hu"><head><meta charset="utf-8"><title>Mobilos folyamat ellenőrzése</title><style>body{margin:0;background:#ddd;font:14px Arial}iframe{display:block;height:1400px;border:0;margin:auto}pre{white-space:pre-wrap;margin:0;padding:1rem}</style></head><body><pre id="results">Ellenőrzés…</pre><iframe title="Elkülönített teszt"></iframe><script>
+const width=Number(new URLSearchParams(location.search).get('width'))||390,frame=document.querySelector('iframe');frame.style.width=width+'px';frame.src='workflow.html?preview';
+const timer=setInterval(()=>{const report=frame.contentDocument?.querySelector('#workflow-test-results');if(report?.dataset.failed!==undefined){document.querySelector('#results').textContent=report.textContent;clearInterval(timer);if(new URLSearchParams(location.search).has('preview'))document.querySelector('#results').hidden=true;window.scrollTo(0,0)}},50);
+</script></body></html>
