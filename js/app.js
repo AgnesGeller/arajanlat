@@ -96,6 +96,7 @@ $('#refresh-data').onclick=async()=>{
   }
   if(projectVisible&&projectId&&state.projects.some(p=>p.id===projectId))await openProject(projectId);
   if(quoteVisible&&quoteId&&state.quotes.some(q=>q.id===quoteId))await openQuote(quoteId);
+  if(!$('#quick-view').hidden)await quickQuotes.open();
   status(message||'Az adatok naprakészek.');
   if('serviceWorker'in navigator){const reg=await navigator.serviceWorker.getRegistration();await reg?.update();if(reg?.waiting)$('#update-banner').hidden=false}
  }catch(error){fail(error)}finally{button.disabled=false;dataRefreshRunning=false;$('#workspace').inert=false;$('#nav').inert=false}
