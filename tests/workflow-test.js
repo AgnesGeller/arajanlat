@@ -51,6 +51,7 @@ try{
  await click('#offer-link',()=>$('#form-dialog').open&&tables.quote_versions.find(v=>v.id==='version').status==='published');await waitFor(()=>$('#quote-detail [aria-current="step"] .step-number').textContent==='4');check('Véglegesítés után a megosztás és PDF elérhető',!$('#offer-link').disabled&&!$('#print-quote').disabled&&tables.quote_versions.find(v=>v.id==='version').published_snapshot.total.net===3000);await click('#dialog-cancel');
  await click('#offer-link',()=>$('#form-dialog').open);check('Végleges ajánlat linkje újra elkészíthető',!!$('#generated-link'));await click('#dialog-cancel');
  check('Mobilméreten nincs vízszintes kilógás',document.documentElement.scrollWidth<=window.innerWidth);
+ await click('#nav [data-view="quick"]',()=>visible('#quick-view'));check('A gyors ajánlat a belső menüből nyílik',!!document.querySelector('#quick-view [data-action="next"]')&&!visible('#quote-detail'));await click('#nav [data-view="start"]',()=>visible('#start-view'));
  check('Nincs váratlan JavaScript-hiba',errors.length===0);
 }catch(error){failed++;report.textContent+='HIBA: '+error.stack+'\n';}
 report.textContent+=`\nNézet: ${window.innerWidth} × ${window.innerHeight}\nEREDMÉNY: ${passed} sikeres, ${failed} hibás ellenőrzés.\nKizárólag elkülönített tesztadatok; éles írás és emailküldés nélkül.`;

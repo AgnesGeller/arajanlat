@@ -1,3 +1,4 @@
+import { mountQuickQuote } from './modules/quick-quote.js';
 import { workflowHtml, versionLabel } from './modules/workflow-ui.js';
 import './modules/app-install.js';
 import { mountCustomerSearch } from './modules/customer-search.js';
@@ -23,17 +24,17 @@ $('#dialog-close').onclick=$('#dialog-cancel').onclick=()=>$('#form-dialog').clo
 function field(name,label,value='',type='text',required=false){return `<label>${label}<input name="${name}" type="${type}" ${type==='number'?'step="any" min="0"':''} value="${esc(value)}" ${required?'required':''}></label>`}
 function area(name,label,value=''){return `<label>${label}<textarea name="${name}">${esc(value)}</textarea></label>`}
 async function init(){if(!configured){$('#setup').hidden=false;return}selectAccount(localStorage.getItem('quote_last_account'));const {data:{session}}=await db.auth.getSession();await authState(session);db.auth.onAuthStateChange((_event,nextSession)=>{setTimeout(()=>authState(nextSession).catch(fail),0)})}
-async function authState(session){startAppointmentNotifications(null);state.session=session;const account=Object.entries(STAFF_ACCOUNTS).find(([,value])=>value.email.toLowerCase()===session?.user?.email?.toLowerCase());$('#login').hidden=Boolean(account);$('#welcome').hidden=Boolean(account);$('#workspace').hidden=true;$('#nav').hidden=true;if(!account){if(session)status('Ehhez a fiókhoz nincs árajánlatkészítői hozzáférés.',true);return}selectAccount(account[0]);localStorage.setItem('quote_last_account',account[0]);
+async function authState(session){startAppointmentNotifications(null);state.session=session;const account=Object.entries(STAFF_ACCOUNTS).find(([,value])=>value.email.toLowerCase()===session?.user?.email?.toLowerCase());$('#login').hidden=Boolean(account);$('#welcome').hidden=Boolean(account);$('#workspace').hidden=true;$('#nav').hidden=true;if(!account){quickQuotes.clear();if(session)status('Ehhez a fiókhoz nincs árajánlatkészítői hozzáférés.',true);return}selectAccount(account[0]);localStorage.setItem('quote_last_account',account[0]);
  try{const staff=await rows('quote_staff',q=>q.select('user_id,company_id').eq('user_id',session.user.id).limit(1));if(!staff[0]?.company_id){$('#login').hidden=false;$('#welcome').hidden=false;status('Ehhez a fiókhoz nincs árajánlatkészítői hozzáférés.',true);return}state.companyId=staff[0].company_id;startAppointmentNotifications(session.user.id);$('#workspace').hidden=false;$('#nav').hidden=false;status('');await refresh();const message=await syncCustomers();await refresh();if(message)status(message);const requested=new URLSearchParams(location.search).get('project');if(requested&&!state.deepLinkOpened){const project=state.projects.find(p=>p.id===requested);state.deepLinkOpened=true;if(project){await openCustomer(project.client_id);await openProject(project.id)}else status('Ez a projekt nem elérhető.',true)}}catch(error){$('#login').hidden=false;$('#welcome').hidden=false;fail(error)}}
 function selectAccount(key){if(!STAFF_ACCOUNTS[key])return;state.selectedAccount=key;document.querySelectorAll('[data-account]').forEach(button=>{const active=button.dataset.account===key;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active))})}
 document.querySelectorAll('[data-account]').forEach(button=>button.onclick=()=>{selectAccount(button.dataset.account);localStorage.setItem('quote_last_account',button.dataset.account);$('#login-help').textContent=`${STAFF_ACCOUNTS[button.dataset.account].name} kiválasztva. A sikeres belépést ez az eszköz megjegyzi.`});
 $('#login-form').onsubmit=async event=>{event.preventDefault();const pin=new FormData(event.target).get('pin');if(!state.selectedAccount){status('Válaszd ki a neved.',true);return}const button=event.target.querySelector('button.primary');button.disabled=true;try{const {error}=await db.auth.signInWithPassword({email:STAFF_ACCOUNTS[state.selectedAccount].email,password:pin});if(error){status('Hibás PIN-kód vagy sikertelen belépés. Próbáld újra.',true);return}localStorage.setItem('quote_last_account',state.selectedAccount);event.target.reset()}catch(error){fail(error)}finally{button.disabled=false}};
-$('#signout').onclick=async()=>{let notificationFailed=false;try{await stopAppointmentNotifications()}catch{notificationFailed=true}try{const {error}=await db.auth.signOut({scope:'local'});if(error&&error.name!=='AuthSessionMissingError')throw error;state.companyId=null;await authState(null);status(notificationFailed?'Kijelentkeztél. A riasztás kikapcsolását ellenőrizd a böngésző értesítési beállításaiban.':'Kijelentkeztél.')}catch(error){fail(error)}};
+$('#signout').onclick=async()=>{try{await quickQuotes.flushBeforeLeave();}catch(error){fail(error);return;}let notificationFailed=false;try{await stopAppointmentNotifications()}catch{notificationFailed=true}try{const {error}=await db.auth.signOut({scope:'local'});if(error&&error.name!=='AuthSessionMissingError')throw error;state.companyId=null;await authState(null);status(notificationFailed?'Kijelentkeztél. A riasztás kikapcsolását ellenőrizd a böngésző értesítési beállításaiban.':'Kijelentkeztél.')}catch(error){fail(error)}};
 document.querySelectorAll('[data-view]').forEach(button=>button.onclick=()=>navigateView(button.dataset.view).catch(fail));
-async function navigateView(view){await flushQuoteSave();showView(view);}
+async function navigateView(view){await flushQuoteSave();await quickQuotes.flushBeforeLeave();showView(view);if(view==='quick')await quickQuotes.open();}
 function showView(view,detail=false){
  const changed=$('#'+view+'-view').hidden||(view==='projects'&&$('#project-detail').hidden===detail)||(view==='quotes'&&$('#quote-detail').hidden===detail);
- for(const name of ['start','customers','projects','quotes'])$('#'+name+'-view').hidden=view!==name;
+ for(const name of ['start','customers','projects','quotes','quick'])$('#'+name+'-view').hidden=view!==name;
  $('#project-browser').hidden=view==='projects'&&detail;$('#project-detail').hidden=view!=='projects'||!detail;
  $('#quote-browser').hidden=view==='quotes'&&detail;$('#quote-detail').hidden=view!=='quotes'||!detail;
  document.querySelectorAll('#nav [data-view]').forEach(button=>{const active=button.dataset.view===view;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
@@ -85,7 +86,7 @@ $('#refresh-data').onclick=async()=>{
  if(syncRunning){status('Az ügyféllista frissítése már folyamatban van.');return}
  const button=$('#refresh-data');button.disabled=true;dataRefreshRunning=true;$('#workspace').inert=true;$('#nav').inert=true;
  try{
-  await flushQuoteSave();status('Adatok frissítése…');
+  await flushQuoteSave();await quickQuotes.flushBeforeLeave();status('Adatok frissítése…');
   const message=await syncCustomers();
   const customerId=state.customer?.id,projectId=state.project?.id,quoteId=state.quote?.id;
   const quoteVisible=!$('#quote-detail').hidden,projectVisible=!$('#project-detail').hidden;
@@ -208,5 +209,15 @@ async function createToken(projectId,versionId,purpose,email='',number=''){try{
 }catch(error){fail(error)}}
 
 async function printQuote(){const d=state.version.published_snapshot;if(!d){status('Nyomtatáshoz előbb küldje ki az ajánlatot.',true);return}const root=document.createElement('section');root.id='admin-print';root.innerHTML=`<header class="print-brand"><img class="document-logo" src="assets/diszkertek-logo.png" alt="Díszkertek"></header><p>${esc(d.number)} · ${esc(d.version)}</p><h1>Árajánlat</h1>${d.project_code?`<p>Projekt: ${esc(d.project_code)}</p>`:''}<p>${esc(d.customer)}<br>${esc(d.work_address||'')}</p><p>Kelt: ${dateTime(d.date)} · Érvényesség: ${esc(d.valid_until||'egyeztetés szerint')}</p>${d.detail_level==='detailed'?(d.items||[]).map(i=>`<div class="offer-row"><span>${esc(i.name)} · ${esc(i.quantity1)} ${esc(i.unit1||'')}${i.unit2?` × ${esc(i.quantity2)} ${esc(i.unit2)}`:''}</span><strong>${money(i.gross)}</strong></div>`).join(''):''}<div class="summary"><span>Nettó: ${money(d.total.net)}</span><span>ÁFA: ${money(d.total.vat)}</span><strong>Bruttó: ${money(d.total.gross)}</strong></div><p>${esc(d.terms||'')}</p>`;document.body.append(root);try{await root.querySelector('img').decode()}catch{root.remove();status('A logó nem töltődött be. Ellenőrizd az internetkapcsolatot, majd próbáld újra.',true);return}document.body.classList.add('has-admin-print');window.print();setTimeout(()=>{root.remove();document.body.classList.remove('has-admin-print')},1000)}
-document.addEventListener('quote:before-update',event=>event.detail.waitUntil((async()=>{if($('#form-dialog').open)throw Error('Előbb mentsd vagy zárd be a megnyitott űrlapot.');await flushQuoteSave()})()));
+document.addEventListener('quote:before-update',event=>event.detail.waitUntil((async()=>{if($('#form-dialog').open)throw Error('Előbb mentsd vagy zárd be a megnyitott űrlapot.');await flushQuoteSave();await quickQuotes.flushBeforeLeave()})()));
+const quickQuotes=mountQuickQuote($('#quick-view'),{
+ data:()=>({customers:state.customers,projects:state.projects,catalog:state.catalog,templates:state.templates,
+  templateItems:id=>rows('quote_template_items',q=>q.select('*').eq('template_id',id).order('position')),
+  loadPlants:()=>rows('quote_plants',q=>q.select('*').eq('active',true).order('name')),
+  listDrafts:async()=>{const list=await rows('quote_quick_drafts',q=>q.select('id,number,revision,promoted_quote_id,updated_at,title:payload->>title,customer_name:payload->customer->>name').eq('company_id',state.companyId).order('updated_at',{ascending:false}).limit(50));return list.map(d=>({...d,payload:{title:d.title,customer:{name:d.customer_name}}}));},
+  loadDraft:async id=>(await rows('quote_quick_drafts',q=>q.select('*').eq('id',id).eq('company_id',state.companyId).limit(1)))[0]
+ }),rpc,
+ onCreateCustomer:async p=>{const c=await rpc('quote_clients_upsert',{p_id:null,p_name:p.customer.name,p_client_type:'',p_contact_name:'',p_phone:p.customer.phone,p_email:p.customer.email,p_billing_address:'',p_project_address:p.address,p_notes:'',p_share:true,p_expected_revision:null});await refresh();syncCustomers().catch(()=>{});return c;},
+ onPromoted:async id=>{await refresh();await openQuote(id);}
+});
 init().catch(fail);

@@ -1,0 +1,40 @@
+-- Read/write verification is fully rolled back, including generated project IDs.
+begin;
+do $$ declare staff uuid; company uuid; client uuid;
+begin
+ select user_id,company_id into staff,company from public.quote_staff order by created_at limit 1;
+ select id into client from public.quote_clients where company_id=company and name in ('Teszt','Geller Ágnes') order by name limit 1;
+ if staff is null or client is null then raise exception 'A kijelölt belső tesztfiók vagy tesztügyfél hiányzik.'; end if;
+ perform set_config('request.jwt.claim.sub',staff::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',staff,'role','authenticated')::text,true);
+ perform set_config('quote_test.client',client::text,true);
+end $$;
+set local role authenticated;
+do $$ declare d jsonb; updated jsonb; payload jsonb; quote uuid; again uuid; caught boolean:=false; net numeric;
+begin
+ payload:=jsonb_build_object('client_id',current_setting('quote_test.client'),'customer',jsonb_build_object('name','Teszt'),'title','GYORS AJÁNLAT TESZT – visszagörgetett','address','Teszt cím','terms','Teszt','items',jsonb_build_array(jsonb_build_object('name','Talajtakaró','main_item','Kert','unit1','db','unit2',null,'quantity1',60,'quantity2',null,'material_unit',1000,'labor_unit',500,'other_cost',100,'vat_rate',0.27,'pricing_required',false,'measurement',jsonb_build_object('mode','groundcover','area_m2',10,'density_percent',100))));
+ d:=public.quote_quick_save(gen_random_uuid(),payload,null);
+ if (select count(*) from public.quote_quotes where number=d->>'number')<>0 then raise exception 'A gyors piszkozat nem kerülhet automatikusan a teljes ajánlatok közé.'; end if;
+ updated:=public.quote_quick_save((d->>'id')::uuid,payload||'{"terms":"Javított"}',1);
+ begin perform public.quote_quick_save((d->>'id')::uuid,payload,1);exception when raise_exception then caught:=true;end;
+ if not caught then raise exception 'Az elavult mentésnek hibát kellett volna adnia.';end if;
+ quote:=public.quote_quick_promote((d->>'id')::uuid,2,null);
+ again:=public.quote_quick_promote((d->>'id')::uuid,2,null);
+ if quote is distinct from again then raise exception 'Az átvétel megkettőzte az ajánlatot.';end if;
+ select sum(i.quantity1*i.material_unit+i.quantity1*i.labor_unit+i.other_cost) into net from public.quote_items i join public.quote_versions v on v.id=i.version_id where v.quote_id=quote;
+ if net<>90100 then raise exception 'Eltér a teljes ajánlat számítása: %',net;end if;
+ if (select count(*) from public.quote_items i join public.quote_versions v on v.id=i.version_id where v.quote_id=quote and i.name='Kert / Talajtakaró')<>1 then raise exception 'Elveszett a főtétel vagy megkettőződött az altétel.';end if;
+ caught:=false;
+ begin perform public.quote_quick_save((d->>'id')::uuid,payload,3);exception when raise_exception then caught:=true;end;
+ if not caught then raise exception 'Átvétel után a gyors másolat nem írható át.';end if;
+ perform set_config('quote_test.id',d->>'id',true);
+ perform set_config('request.jwt.claim.sub',gen_random_uuid()::text,true);
+ perform set_config('request.jwt.claims','{}',true);
+ if exists(select 1 from public.quote_quick_drafts) then raise exception 'Nem belső felhasználó gyors ajánlatot olvashat.';end if;
+ caught:=false;
+ begin perform public.quote_quick_promote(current_setting('quote_test.id')::uuid,3,null);exception when raise_exception then caught:=true;end;
+ if not caught then raise exception 'Nem belső felhasználó átvehet ajánlatot.';end if;
+end $$;
+reset role;
+select 'quick_quote_sql_tests_passed' as result;
+rollback;
