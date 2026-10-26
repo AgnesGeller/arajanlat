@@ -5,11 +5,11 @@ A belső menü feltűnő, indigókék **⚡ Gyors ajánlat** gombja nyitja meg. 
 ## Használat
 
 1. **Ügyfél és helyszín:** kereshetsz a közös ügyféllistában, vagy megadhatsz nevet regisztráció nélkül. Az „Ügyfél felvétele a közös listába” gomb a már meglévő ügyfélfelvételt használja. Az ügyfél, cím és munkanév a gyors kalkulációhoz és PDF-hez kihagyható.
-2. **Tételek és felmérés:** ugyanaz a 163 tételes Excel-árlista, a meglévő sablonok és a növényárlista használható, mint a teljes ajánlatkészítőben. A főtétel/csoport opcionális. Egyszerre egy tétel szerkeszthető. Az árak és a többi tétel lenyitható.
+2. **Tételek és felmérés:** ugyanaz a 163 tételes Excel-árlista, a meglévő sablonok és a növényárlista használható, mint a teljes ajánlatkészítőben. A főtétel/csoport opcionális. Egyszerre egy tétel szerkeszthető. Mentés után az alsó, mindig látható **+ Újabb tétel** gombbal felgörgetés nélkül folytatható a rögzítés. Az árak és a többi tétel lenyitható.
 3. **Feltételek:** dátum, érvényesség, megjegyzés és a fejléc/lábléc adatai; minden mező kihagyható.
 4. **PDF és megosztás:** valódi PDF-fájl, magyar ékezetekkel, logóval, fejléccel, lábléccel és oldalszámokkal. Androidon a fájlmegosztás akkor jelenik meg, ha a böngésző támogatja. Minden eszközön használható a PDF letöltése. Az emailhez a fájl a saját levelezőben csatolható; nincs automatikus emailküldés.
 
-A korábbi lépések egyetlen sorra csukódnak össze, visszalépéskor az adatok megmaradnak. Lépésváltáskor mentés történik a saját `quote_quick_drafts` táblába. A mentett gyors ajánlatok a felület tetején nyithatók meg. A legutóbbi 50 bejegyzést listázzuk.
+A korábbi lépések egyetlen sorra csukódnak össze, visszalépéskor az adatok megmaradnak. A mezők módosítása rövid késleltetéssel automatikusan ment a saját `quote_quick_drafts` táblába; lépésváltás előtt a folyamatban lévő mentés is befejeződik. Külön Mentés gomb nincs. A tételszerkesztő „Tétel hozzáadása / mentése” gombja rögzíti a kitöltött tételt az ajánlatban. A mentett gyors ajánlatok a felület tetején nyithatók meg. A legutóbbi 50 bejegyzést listázzuk.
 
 ## Választható mennyiségszámítás
 
@@ -39,15 +39,15 @@ A szerver egyetlen tranzakcióban hozza létre a projektet, ajánlatot, változa
 
 ## Ellenőrzés – 2026. október 26.
 
-- `tests/quick-quote.html`: 33 sikeres elkülönített felületi és számítási ellenőrzés asztali, 390 px mobil- és 768 px tabletszélességen.
+- `tests/quick-quote.html`: 51 sikeres elkülönített felületi és számítási ellenőrzés asztali és 390 px mobilnézetben.
 - A teljes ajánlatkészítő meglévő tesztje 26 sikeres ellenőrzéssel fut, beleértve az új belső menüpontot.
 - A `supabase/tests/quote_quick_quotes.sql` hitelesített szereppel teszteli a mentést, az elavult verzió elutasítását, a teljes átvétel tételösszegeit, az ismételt kérés egyszeri hatását és a jogosulatlan olvasás/átvétel tiltását. Minden adatírás visszagörgetve, éles tesztrekord nem maradt.
 - Egyoldalas és ötlapos PDF készült; ékezetek, oldalszámok, logó, fejléc és lábléc ellenőrizve. Valós címzettnek nem küldtünk levelet vagy fájlt. A fizikai Android/PC megosztási célokat a felhasználó saját eszköze biztosítja.
-- Gyorsítótár-verzió: 45. Adatbázisszkript: `supabase/quote_quick_quotes.sql`; az Árajánlatot kiszolgáló projektben már alkalmazva. Más Supabase-projektben nem futott változtatás.
+- Gyorsítótár-verzió: 46. Adatbázisszkript: `supabase/quote_quick_quotes.sql`; az Árajánlatot kiszolgáló projektben már alkalmazva. Más Supabase-projektben nem futott változtatás.
 
 ### Ügyfélválasztó egyszerűsítése
 
-Az első lépésben két kiemelt, külön nyitható választó van: **Új ügyfél felvétele** és **Ügyfél a listából**. Alaphelyzetben mindkettő csukott. Egyszerre egy nyitható ki, és ugyanazzal a címmel vissza is csukható. A váltás megőrzi a még nem mentett ügyfélmezőket. Az ügyféladatok, cím és munkanév továbbra is kihagyhatók a gyors PDF-hez. A célzott ellenőrzések száma a feltételsablon-, munkaidő- és PDF-próbákkal 45-re nőtt.
+Az első lépésben két kiemelt, külön nyitható választó van: **Új ügyfél felvétele** és **Ügyfél a listából**. Alaphelyzetben mindkettő csukott. Egyszerre egy nyitható ki, és ugyanazzal a címmel vissza is csukható. A váltás megőrzi a még nem mentett ügyfélmezőket. Az ügyféladatok, cím és munkanév továbbra is kihagyhatók a gyors PDF-hez. A célzott ellenőrzések száma az automatikus mentés, az újabb tétel elérhetősége, a mentett tétel megjelenése, a feltételsablon, a munkaidő és a PDF próbáival 51-re nőtt.
 
 
 ## Feltételsablonok
@@ -56,7 +56,7 @@ A Feltételek lépésben Kertépítés, Kertfenntartás és Gyors ajánlat sablo
 
 ## Egyoldalas lépések és kapcsolt szerkesztés
 
-A gyors ajánlat egyszerre csak egy teljes lépést mutat. A felső 1/4–4/4 jelzésből mindig látszik, hol tart a kitöltés; a Vissza, Mentés és Következő gombok állandó helyen maradnak. A Mentés után látható sikerüzenet jelenik meg.
+A gyors ajánlat egyszerre csak egy teljes lépést mutat. A felső 1/4–4/4 jelzésből mindig látszik, hol tart a kitöltés; a Vissza és Következő gombok állandó helyen maradnak. Az „Automatikus mentés folyamatban…” és „Automatikusan mentve” üzenetek jelzik az állapotot.
 
 A „+ Munkaidő” tétel a tényleges munkadíjat számolja: létszám × tényleges órák × 8 500 Ft/fő/óra, szünetlevonás nélkül.
 
