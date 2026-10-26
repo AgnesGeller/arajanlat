@@ -8,6 +8,7 @@ function complete(m){if(m.mode==='groundcover')return m.use_dimensions?!missing(
 export function unitKind(unit){const normalized=String(unit||'').trim().toLowerCase().replaceAll('³','3').replaceAll('²','2').replaceAll('^','').replaceAll(' ', '');return ({m:'length',fm:'length',m2:'area',m3:'volume'})[normalized]||'quantity';}
 export function measuredQuantity(measurement){
  const m=measurement||{},mode=m.mode||'quantity';
+ if(mode==='worktime')return round(number(m.hours??m.quantity??1,'munkaóra'));
  if(mode==='quantity')return round(number(m.quantity??1,'mennyiség'));
  const fallback=()=>round(number(m.quantity??1,'kézzel megadott mennyiség'));
  if(mode==='groundcover'){
@@ -28,6 +29,11 @@ export function measuredQuantity(measurement){
 export function measuredItem(draft){
  const item={...draft,measurement:{...draft.measurement}};
  item.name=String(item.name||'').trim()||'Egyedi tétel';item.quantity1=measuredQuantity(item.measurement);
+ if(item.measurement.mode==='worktime'){
+  item.unit1='óra';item.unit2='fő';
+  item.quantity2=round(number(item.measurement.people??1,'létszám'));
+  item.material_unit=0;item.labor_unit=8500;
+ }
  if(item.unit2){item.quantity2=round(number(item.quantity2,'második mennyiség'));}else item.quantity2=null;
  for(const key of ['material_unit','labor_unit','other_cost','vat_rate']){const n=Number(String(item[key]??0).replace(',','.'));if(!Number.isFinite(n)||n<0)throw Error('Az árak és az ÁFA nem lehetnek negatívak.');item[key]=round(n,key==='vat_rate'?4:2);}
  if(item.vat_rate>1)throw Error('Az ÁFA 0 és 100% között lehet.');
@@ -41,4 +47,4 @@ export function validateQuickQuote(payload,forPromotion=false){
  if(payload.items.some(i=>i.pricing_required))throw Error('A piros 1 Ft-os jelzésnél add meg és ellenőrizd a tényleges eladási árat.');
  return calculateTotal(payload.items);
 }
-export function measurementText(item){const m=item.measurement;if(!m||m.mode==='quantity'||!complete(m))return '';if(m.mode==='groundcover')return `${m.use_dimensions?[m.length,m.width].join(' × ')+' m':m.area_m2+' m²'} · ${m.density_percent===''?100:m.density_percent??100}% · 100% = 6 db/m²`;if(m.mode==='hedge')return `${m.length} m · ${m.spacing_cm} cm tőtávolság${m.both_ends!==false?' · mindkét végén növénnyel':''}`;return [m.length,...(m.mode==='area'||m.mode==='volume'?[m.width]:[]),...(m.mode==='volume'?[m.height]:[])].join(' × ')+' m';}
+export function measurementText(item){const m=item.measurement;if(!m||m.mode==='quantity')return '';if(m.mode==='worktime')return `${m.people??item.quantity2??1} fő × ${m.hours??item.quantity1??0} óra × 8 500 Ft/fő/óra`;if(!complete(m))return '';if(m.mode==='groundcover')return `${m.use_dimensions?[m.length,m.width].join(' × ')+' m':m.area_m2+' m²'} · ${m.density_percent===''?100:m.density_percent??100}% · 100% = 6 db/m²`;if(m.mode==='hedge')return `${m.length} m · ${m.spacing_cm} cm tőtávolság${m.both_ends!==false?' · mindkét végén növénnyel':''}`;return [m.length,...(m.mode==='area'||m.mode==='volume'?[m.width]:[]),...(m.mode==='volume'?[m.height]:[])].join(' × ')+' m';}

@@ -43,4 +43,23 @@ A szerver egyetlen tranzakcióban hozza létre a projektet, ajánlatot, változa
 - A teljes ajánlatkészítő meglévő tesztje 26 sikeres ellenőrzéssel fut, beleértve az új belső menüpontot.
 - A `supabase/tests/quote_quick_quotes.sql` hitelesített szereppel teszteli a mentést, az elavult verzió elutasítását, a teljes átvétel tételösszegeit, az ismételt kérés egyszeri hatását és a jogosulatlan olvasás/átvétel tiltását. Minden adatírás visszagörgetve, éles tesztrekord nem maradt.
 - Egyoldalas és ötlapos PDF készült; ékezetek, oldalszámok, logó, fejléc és lábléc ellenőrizve. Valós címzettnek nem küldtünk levelet vagy fájlt. A fizikai Android/PC megosztási célokat a felhasználó saját eszköze biztosítja.
-- Gyorsítótár-verzió: 42. Adatbázisszkript: `supabase/quote_quick_quotes.sql`; az Árajánlatot kiszolgáló projektben már alkalmazva. Más Supabase-projektben nem futott változtatás.
+- Gyorsítótár-verzió: 45. Adatbázisszkript: `supabase/quote_quick_quotes.sql`; az Árajánlatot kiszolgáló projektben már alkalmazva. Más Supabase-projektben nem futott változtatás.
+
+### Ügyfélválasztó egyszerűsítése
+
+Az első lépésben két kiemelt, külön nyitható választó van: **Új ügyfél felvétele** és **Ügyfél a listából**. Alaphelyzetben mindkettő csukott. Egyszerre egy nyitható ki, és ugyanazzal a címmel vissza is csukható. A váltás megőrzi a még nem mentett ügyfélmezőket. Az ügyféladatok, cím és munkanév továbbra is kihagyhatók a gyors PDF-hez. A célzott ellenőrzések száma a feltételsablon-, munkaidő- és PDF-próbákkal 45-re nőtt.
+
+
+## Feltételsablonok
+
+A Feltételek lépésben Kertépítés, Kertfenntartás és Gyors ajánlat sablon választható. A szöveg csak a „Szöveg betöltése” gombbal kerül az ajánlatba; meglévő szöveg cseréje megerősítést kér. Minden feltétel átírható, az érvényesség külön dátummező. A saját névvel mentett sablonokat a `quote_terms_templates` tárolja, csak az adott cég Árajánlat-felhasználói olvashatják és vehetnek fel újat. A hosszú ajánlatban is ugyanaz a sablonválasztó működik. Az ajánlat későbbi módosítása a sablont nem írja át. A PDF és a teljes ajánlatba átvétel a végleges szöveget használja.
+
+## Egyoldalas lépések és kapcsolt szerkesztés
+
+A gyors ajánlat egyszerre csak egy teljes lépést mutat. A felső 1/4–4/4 jelzésből mindig látszik, hol tart a kitöltés; a Vissza, Mentés és Következő gombok állandó helyen maradnak. A Mentés után látható sikerüzenet jelenik meg.
+
+A „+ Munkaidő” tétel a tényleges munkadíjat számolja: létszám × tényleges órák × 8 500 Ft/fő/óra, szünetlevonás nélkül.
+
+A teljes ajánlatkezelésbe átvett gyors ajánlat a gyors listában megmarad és tovább szerkeszthető. A gyors és a teljes változat a következő megnyitáskor automatikusan egyezteti a címet, a feltételeket és a tételeket. Kiküldött vagy elfogadott változat módosításakor új szerkeszthető változat készül, a korábbi változat megmarad.
+
+A PDF-letöltés csak az aktuális tartalomhoz készített fájlt engedi letölteni. Módosítás után a korábbi PDF-et eldobja és újat készít.
