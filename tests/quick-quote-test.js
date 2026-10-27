@@ -1,4 +1,4 @@
-import { mountQuickQuote } from '../js/modules/quick-quote.js?v=47';
+import { mountQuickQuote } from '../js/modules/quick-quote.js?v=50';
 import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind } from '../js/modules/quick-quote-model.js?v=47';
 import { calculateItem,calculateTotal } from '../js/modules/quote-calculator.js?v=47';
 import { catalogDisplayName } from '../js/modules/catalog-label.js?v=47';
@@ -85,6 +85,10 @@ try{
  await click('[data-step="3"]',()=>!!$('[data-action="download"]'));$('[data-promote]').checked=true;$('[data-promote]').dispatchEvent(new Event('change',{bubbles:true}));await click('[data-action="promote"]');check('Pipával átvehető, a gyors másolat megmarad',promoted===1&&[...records.values()].at(-1).promoted_quote_id==='full-quote');
  check('A közös számítás változatlan',calculateTotal(record.payload.items).net===202900);
  await click('[data-action="new"]',()=>!!$('[data-action="new-customer"]'));await click('[data-action="new-customer"]');input('customer.name','Új tesztügyfél');await click('[data-step="3"]',()=>!!$('[data-action="download"]'));$('[data-promote]').checked=true;$('[data-promote]').dispatchEvent(new Event('change',{bubbles:true}));await click('[data-action="promote"]');check('Megadott névből átvételkor automatikusan ügyfél készül',created===1&&promoted===2&&[...records.values()].at(-1).payload.client_id==='customer');
+ const savedSeed=structuredClone([...records.values()].at(-1));for(let i=0;i<30;i++){const copy=structuredClone(savedSeed);copy.id=crypto.randomUUID();copy.payload.title='Görgetési próba '+i;records.set(copy.id,copy);}await app.open();
+ $('.quick-saved').open=true;$('.quick-saved>div').scrollTop=120;window.scrollTo({top:100,behavior:'instant'});const savedPageY=window.scrollY;await click('[data-action="reload"]',()=>!root.inert&&$('.quick-saved').open);
+ check('A mentett lista frissítéskor nyitva marad és megőrzi mindkét görgetési helyet',$('.quick-saved').open&&Math.abs($('.quick-saved>div').scrollTop-120)<2&&Math.abs(window.scrollY-savedPageY)<2);
+ check('A mentett lista görgetése nem adódik tovább az oldalnak',getComputedStyle($('.quick-saved>div')).overscrollBehaviorY==='contain');
  check('Nincs váratlan JavaScript-hiba',errors.length===0);
 }catch(error){failed++;report.textContent+='HIBA: '+error.stack+'\n';}
 report.textContent+=`\nEREDMÉNY: ${passed} sikeres, ${failed} hibás. Nézet: ${window.innerWidth}px.\nKizárólag elkülönített, memóriában tárolt tesztadatok.`;report.dataset.failed=failed;
