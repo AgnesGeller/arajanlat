@@ -1,9 +1,9 @@
-import { mountQuickQuote } from '../js/modules/quick-quote.js?v=50';
+import { mountQuickQuote } from '../js/modules/quick-quote.js?v=51';
 import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind } from '../js/modules/quick-quote-model.js?v=47';
 import { calculateItem,calculateTotal } from '../js/modules/quote-calculator.js?v=47';
 import { catalogDisplayName } from '../js/modules/catalog-label.js?v=47';
 const root=document.querySelector('#quick-view'),report=document.querySelector('#results'),$=s=>root.querySelector(s),records=new Map(),terms=[];
-let passed=0,failed=0,promoted=0,created=0,failSave=false,errors=[];
+let passed=0,failed=0,promoted=0,created=0,failSave=false,errors=[],listLimit=null;
 window.addEventListener('error',e=>errors.push(e.message));window.addEventListener('unhandledrejection',e=>errors.push(String(e.reason)));
 const check=(name,value)=>{report.textContent+=(value?'OK: ':'HIBA: ')+name+'\n';value?passed++:failed++;};
 async function wait(test){for(let i=0;i<400;i++){if(test())return;await new Promise(r=>setTimeout(r,10));}throw Error('Várakozás sikertelen: '+test);}
@@ -17,7 +17,7 @@ const rpc=async(name,args)=>{
  if(name==='quote_quick_promote'){const r=records.get(args.p_id);if(!r.promoted_quote_id){r.promoted_quote_id='full-quote';promoted++;}return r.promoted_quote_id;}
  throw Error('Váratlan RPC: '+name);
 };
-const app=mountQuickQuote(root,{data:()=>({listTerms:async()=>structuredClone(terms),saveTerms:async record=>{if(terms.some(t=>t.name===record.name))throw {code:"23505"};const t={...record,id:crypto.randomUUID()};terms.push(t);return structuredClone(t);},customers,projects:[],catalog,templates:[{id:'template',name:'Minta'}],templateItems:async()=>[{catalog_id:'length',position:1}],loadPlants:async()=>[{id:'plant',name:'Talajtakaró tesztnövény',sku:'N-1',sale_net:null,purchase_net:500,sale_price_placeholder:true}],listDrafts:async()=>[...records.values()].map(d=>structuredClone(d)),loadDraft:async id=>structuredClone(records.get(id))}),rpc,onCreateCustomer:async p=>{created++;return {id:'customer',...p.customer};},onPromoted:async()=>{}});
+const app=mountQuickQuote(root,{data:()=>({listTerms:async()=>structuredClone(terms),saveTerms:async record=>{if(terms.some(t=>t.name===record.name))throw {code:"23505"};const t={...record,id:crypto.randomUUID()};terms.push(t);return structuredClone(t);},customers,projects:[],catalog,templates:[{id:'template',name:'Minta'}],templateItems:async()=>[{catalog_id:'length',position:1}],loadPlants:async()=>[{id:'plant',name:'Talajtakaró tesztnövény',sku:'N-1',sale_net:null,purchase_net:500,sale_price_placeholder:true}],listDrafts:async()=>[...records.values()].slice(0,listLimit??100).map(d=>structuredClone(d)),loadDraft:async id=>structuredClone(records.get(id))}),rpc,onCreateCustomer:async p=>{created++;return {id:'customer',...p.customer};},onPromoted:async()=>{}});
 try{
  check('A lineáris árképzés változatlan',calculateItem({quantity1:2,material_unit:1000,labor_unit:500}).net===3000);
  const spray={type:'tiered',first:25000,middle:17000,middle_count:3,later:12000};
@@ -89,7 +89,15 @@ try{
  $('.quick-saved').open=true;$('.quick-saved>div').scrollTop=120;window.scrollTo({top:100,behavior:'instant'});const savedPageY=window.scrollY;await click('[data-action="reload"]',()=>!root.inert&&$('.quick-saved').open);
  check('A mentett lista frissítéskor nyitva marad és megőrzi mindkét görgetési helyet',$('.quick-saved').open&&Math.abs($('.quick-saved>div').scrollTop-120)<2&&Math.abs(window.scrollY-savedPageY)<2);
  check('A mentett lista görgetése nem adódik tovább az oldalnak',getComputedStyle($('.quick-saved>div')).overscrollBehaviorY==='contain');
+ check('Sok mentett ajánlatnál a listán belül lehet görgetni',$('.quick-saved-list').scrollHeight>$('.quick-saved-list').clientHeight);
+ const refreshStyle=getComputedStyle($('[data-action="reload"]'));check('A Lista frissítése jól látható keretes gomb',parseFloat(refreshStyle.borderTopWidth)>0&&refreshStyle.borderTopStyle==='solid'&&$('[data-action="reload"]').getBoundingClientRect().height>=44);
+ await click('[data-load="'+savedSeed.id+'"]',()=>!root.inert&&!$('.quick-saved').open);check('Ajánlat betöltése után a mentett lista automatikusan becsukódik',!$('.quick-saved').open&&$('[data-quick-status]').textContent==='Ajánlat betöltve.');
+ listLimit=2;await app.open();$('.quick-saved').open=true;check('Két rövid tételnél nincs felesleges belső görgetés',$('.quick-saved-row')&&$('.quick-saved-list').scrollHeight<=$('.quick-saved-list').clientHeight);
+ await click('[data-action="new"]');const emptyStatusHeight=$('[data-quick-status]').getBoundingClientRect().height,fieldTop=$('[data-field="title"]').getBoundingClientRect().top;
+ input('title','Mentési jelzés helyének ellenőrzése');await wait(()=>$('[data-quick-status]').textContent.includes('Automatikusan mentve'));
+ const staticStatus=getComputedStyle($('[data-quick-status]')).position==='static',stableStatus=Math.abs($('[data-quick-status]').getBoundingClientRect().height-emptyStatusHeight)<2&&Math.abs($('[data-field="title"]').getBoundingClientRect().top-fieldTop)<2;
+ check('A mentési visszajelzés nem lebeg görgetés közben',staticStatus);check('A mentési üzenet megjelenése nem tolja el a mezőket',stableStatus);
  check('Nincs váratlan JavaScript-hiba',errors.length===0);
 }catch(error){failed++;report.textContent+='HIBA: '+error.stack+'\n';}
 report.textContent+=`\nEREDMÉNY: ${passed} sikeres, ${failed} hibás. Nézet: ${window.innerWidth}px.\nKizárólag elkülönített, memóriában tárolt tesztadatok.`;report.dataset.failed=failed;
-if(new URLSearchParams(location.search).has('preview')){report.hidden=true;const preview=structuredClone([...records.values()].find(r=>r.payload.items.length>=3));preview.id='preview';preview.promoted_quote_id=null;records.set(preview.id,preview);await app.open();await click('[data-load="preview"]');await click('[data-step="1"]');await click('[data-edit="'+preview.payload.items[2].id+'"]');if(new URLSearchParams(location.search).has('customerpreview')){await click('[data-step="0"]');await click('[data-action="clear-client"]');}window.scrollTo(0,0);}
+if(new URLSearchParams(location.search).has('preview')){listLimit=null;report.hidden=true;const preview=structuredClone([...records.values()].find(r=>r.payload.items.length>=3));preview.id='preview';preview.promoted_quote_id=null;records.set(preview.id,preview);await app.open();await click('[data-load="preview"]');await click('[data-step="1"]');await click('[data-edit="'+preview.payload.items[2].id+'"]');if(new URLSearchParams(location.search).has('customerpreview')){await click('[data-step="0"]');await click('[data-action="clear-client"]');}window.scrollTo(0,0);}

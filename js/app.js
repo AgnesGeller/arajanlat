@@ -1,5 +1,5 @@
 import { mountTermsTemplates } from './modules/terms-templates.js';
-import { mountQuickQuote } from './modules/quick-quote.js?v=50';
+import { mountQuickQuote } from './modules/quick-quote.js?v=51';
 import { workflowHtml, versionLabel } from './modules/workflow-ui.js';
 import './modules/app-install.js';
 import { mountCustomerSearch } from './modules/customer-search.js';

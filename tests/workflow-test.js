@@ -26,7 +26,7 @@ function check(name,test){if(!test){failed++;report.textContent+='HIBA: '+name+'
 async function waitFor(test){for(let i=0;i<200;i++){if(test())return;await new Promise(r=>setTimeout(r,10));}throw Error('Várakozás sikertelen: '+test);}
 async function click(selector,ready){$(selector).click();if(ready)await waitFor(ready);else await new Promise(r=>setTimeout(r,20));}
 try{
- await import('../js/app.js?v=50');await waitFor(()=>visible('#workspace')&&$('#recent-projects button'));
+ await import('../js/app.js?v=51');await waitFor(()=>visible('#workspace')&&$('#recent-projects button'));
  check('Belépés után a Kezdés oldal nyílik',visible('#start-view')&&!visible('#customers-view')&&$('#nav [aria-current="page"]').dataset.view==='start');
  check('Négy világos lépés látszik',$('.start-steps').children.length===4);check('Kezdőoldal nem lóg ki',document.documentElement.scrollWidth<=window.innerWidth);
  await click('#begin-quote',()=>visible('#customers-view'));check('Új ajánlat a keresőhöz vezet',document.activeElement===$('#customer-search')&&!visible('#customer-detail'));
