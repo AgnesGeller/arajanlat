@@ -39,11 +39,11 @@ A szerver egyetlen tranzakcióban hozza létre a projektet, ajánlatot, változa
 
 ## Ellenőrzés – 2026. október 26.
 
-- `tests/quick-quote.html`: 51 sikeres elkülönített felületi és számítási ellenőrzés asztali és 390 px mobilnézetben.
+- `tests/quick-quote.html`: 58 sikeres elkülönített felületi és számítási ellenőrzés asztali és 390 px mobilnézetben.
 - A teljes ajánlatkészítő meglévő tesztje 26 sikeres ellenőrzéssel fut, beleértve az új belső menüpontot.
 - A `supabase/tests/quote_quick_quotes.sql` hitelesített szereppel teszteli a mentést, az elavult verzió elutasítását, a teljes átvétel tételösszegeit, az ismételt kérés egyszeri hatását és a jogosulatlan olvasás/átvétel tiltását. Minden adatírás visszagörgetve, éles tesztrekord nem maradt.
 - Egyoldalas és ötlapos PDF készült; ékezetek, oldalszámok, logó, fejléc és lábléc ellenőrizve. Valós címzettnek nem küldtünk levelet vagy fájlt. A fizikai Android/PC megosztási célokat a felhasználó saját eszköze biztosítja.
-- Gyorsítótár-verzió: 46. Adatbázisszkript: `supabase/quote_quick_quotes.sql`; az Árajánlatot kiszolgáló projektben már alkalmazva. Más Supabase-projektben nem futott változtatás.
+- Gyorsítótár-verzió: 47. Adatbázisszkript: `supabase/quote_quick_quotes.sql`; az Árajánlatot kiszolgáló projektben már alkalmazva. Más Supabase-projektben nem futott változtatás.
 
 ### Ügyfélválasztó egyszerűsítése
 

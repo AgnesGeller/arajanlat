@@ -1,6 +1,7 @@
-import { mountQuickQuote } from '../js/modules/quick-quote.js';
-import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind } from '../js/modules/quick-quote-model.js';
-import { calculateTotal } from '../js/modules/quote-calculator.js';
+import { mountQuickQuote } from '../js/modules/quick-quote.js?v=47';
+import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind } from '../js/modules/quick-quote-model.js?v=47';
+import { calculateItem,calculateTotal } from '../js/modules/quote-calculator.js?v=47';
+import { catalogDisplayName } from '../js/modules/catalog-label.js?v=47';
 const root=document.querySelector('#quick-view'),report=document.querySelector('#results'),$=s=>root.querySelector(s),records=new Map(),terms=[];
 let passed=0,failed=0,promoted=0,created=0,failSave=false,errors=[];
 window.addEventListener('error',e=>errors.push(e.message));window.addEventListener('unhandledrejection',e=>errors.push(String(e.reason)));
@@ -18,6 +19,15 @@ const rpc=async(name,args)=>{
 };
 const app=mountQuickQuote(root,{data:()=>({listTerms:async()=>structuredClone(terms),saveTerms:async record=>{if(terms.some(t=>t.name===record.name))throw {code:"23505"};const t={...record,id:crypto.randomUUID()};terms.push(t);return structuredClone(t);},customers,projects:[],catalog,templates:[{id:'template',name:'Minta'}],templateItems:async()=>[{catalog_id:'length',position:1}],loadPlants:async()=>[{id:'plant',name:'Talajtakaró tesztnövény',sku:'N-1',sale_net:null,purchase_net:500,sale_price_placeholder:true}],listDrafts:async()=>[...records.values()].map(d=>structuredClone(d)),loadDraft:async id=>structuredClone(records.get(id))}),rpc,onCreateCustomer:async p=>{created++;return {id:'customer',...p.customer};},onPromoted:async()=>{}});
 try{
+ check('A lineáris árképzés változatlan',calculateItem({quantity1:2,material_unit:1000,labor_unit:500}).net===3000);
+ const spray={type:'tiered',first:25000,middle:17000,middle_count:3,later:12000};
+ check('Növényvédelem első tartály ára',calculateItem({quantity1:1,material_unit:25000,labor_unit:0,calculation_rule:spray}).net===25000);
+ check('Növényvédelem negyedik tartályig az Excel-képletet követi',calculateItem({quantity1:4,material_unit:25000,labor_unit:0,calculation_rule:spray}).net===76000);
+ check('Növényvédelem ötödik tartálytól 12 000 Ft-tal nő',calculateItem({quantity1:5,material_unit:25000,labor_unit:0,calculation_rule:spray}).net===88000);
+ check('Lemosó permetezés sávos ára megmarad',calculateItem({quantity1:5,material_unit:20000,labor_unit:0,calculation_rule:{type:'tiered',first:20000,middle:12000,middle_count:3,later:7000}}).net===63000);
+ check('Földelszállítás: 2 × 8 000 Ft + egyszeri 10 000 Ft',calculateItem({quantity1:2,material_unit:8000,labor_unit:0,calculation_rule:{type:'fixed_plus_unit',unit_price:8000,fixed:10000}}).net===26000);
+ const variants=[{id:'old',subcategory:'Azonos tétel',comparison_key:'azonostetel',price_variant:1,source:'Kalkulátor'},{id:'work',subcategory:'Azonos tétel',comparison_key:'azonostetel',price_variant:2,source:'Munkalap árlista'}];
+ check('Eltérő áraknál 1. és 2. forrásjelölés látszik',catalogDisplayName(variants[0],variants).startsWith('1.')&&catalogDisplayName(variants[1],variants).startsWith('2.'));
  check('m, fm, m² és m³ felismerése',unitKind('m')==='length'&&unitKind('fm')==='length'&&unitKind('m²')==='area'&&unitKind('m^3')==='volume');
  check('m² hosszúság × szélesség',measuredQuantity({mode:'area',length:5,width:4})===20);
  check('m³ hosszúság × szélesség × magasság',measuredQuantity({mode:'volume',length:5,width:4,height:.5})===10);
@@ -59,7 +69,7 @@ try{
  $('[data-terms-name]').value='Saját feltételeim';await click('[data-terms-save]');check('Dupla sablonnévnél érthető üzenet és a szöveg megmarad',$('[data-terms-status]').textContent.includes('másik nevet')&&$('[data-field="terms"]').value===terms[0].body);
  await click('[data-step="1"]');await click('[data-step="2"]',()=>!!$('[data-terms-select] option[value="custom:'+terms[0].id+'"]'));input('terms','');chooseTerms('custom:'+terms[0].id);await click('[data-terms-apply]');check('Saját sablon újranyitás után visszatölthető',$('[data-field="terms"]').value===terms[0].body);
  input('terms','PDF-re kerülő végleges feltételek.');await click('[data-step="3"]',()=>!!$('[data-action="download"]'));await wait(()=>!$('[data-action="download"]').disabled);check('Az átírt feltételek az ajánlatba mentődnek',[...records.values()].at(-1).payload.terms==='PDF-re kerülő végleges feltételek.');
- const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js');
+ const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js?v=47');
  const short=await quickQuotePdf(record);check('PDF fájl valódi PDF és ékezetes címmel készül',short.type==='application/pdf'&&(await short.text()).startsWith('%PDF-'));
  const haszon=structuredClone(record);haszon.number='GY-2026-EFF27B6B76F1';haszon.payload.title='Haszonnövény ágyás';haszon.payload.items=[
   {name:'Anyagbeszerzés 1m3',quantity1:1,unit1:'m3',quantity2:null,unit2:'',material_unit:10000,labor_unit:15000,other_cost:0,vat_rate:0,measurement:{mode:'quantity',quantity:1}},

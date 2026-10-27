@@ -1,7 +1,7 @@
 <!doctype html><html lang="hu"><meta charset="utf-8"><title>Munkalap kalkulátor ellenőrzése</title><body><h1>Munkalap kalkulátor ellenőrzése</h1><pre id="result">Ellenőrzés folyamatban…</pre><script type="module">
 import {calculateWorksheet,calculateProject,tierPrice} from '../js/modules/worksheet-calculator.js';
 import {calculateProgress} from '../js/modules/work-progress.js?test=2';
-import {calculateItem} from '../js/modules/quote-calculator.js';
+import {calculateItem} from '../js/modules/quote-calculator.js?v=47';
 const tests=[];
 function check(name,fn){try{if(!fn())throw Error('Eltérő eredmény');tests.push({name,ok:true});}catch(e){tests.push({name,ok:false,error:e.message});}}
 const fixture=(data,id='teszt')=>({id,customer_name:'Teszt',form_data:data,updated_at:'2026-10-05T10:00:00Z'});

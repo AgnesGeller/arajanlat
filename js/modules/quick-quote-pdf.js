@@ -1,5 +1,5 @@
-import { calculateItem, calculateTotal, money } from './quote-calculator.js';
-import { validateQuickQuote, measurementText } from './quick-quote-model.js';
+import { calculateItem, calculateTotal, money } from './quote-calculator.js?v=47';
+import { validateQuickQuote, measurementText } from './quick-quote-model.js?v=47';
 
 let resources;
 const base64=buffer=>{let value='';const bytes=new Uint8Array(buffer);for(let i=0;i<bytes.length;i+=8192)value+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(value);};

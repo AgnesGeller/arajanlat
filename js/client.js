@@ -1,6 +1,6 @@
 import { requestDimensionFields, mountRequestWorkFields } from './modules/request-fields.js';
 import { configured, rpc } from './services/supabase-service.js';
-import { money, dateTime } from './modules/quote-calculator.js';
+import { money, dateTime } from './modules/quote-calculator.js?v=47';
 import { requestAppointments, appointmentLabel } from './modules/appointments.js';
 import { composeEmail } from './services/email-service.js';
 const $=s=>document.querySelector(s);

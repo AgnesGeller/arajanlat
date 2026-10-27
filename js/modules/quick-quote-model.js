@@ -1,4 +1,4 @@
-import { calculateTotal } from './quote-calculator.js';
+import { calculateTotal } from './quote-calculator.js?v=47';
 
 export const blankQuickQuote = () => ({client_id:null, customer:{name:'',email:'',phone:''},address:'',title:'',items:[],terms:'',valid_until:'',issued_on:new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Budapest'}).format(new Date()),issuer:{name:'Díszkertek',address:'',tax_number:'',email:'info@diszkertek.hu',phone:'+36 70 634 9630'}});
 const round = (n,places=3) => Number(Number(n).toFixed(places));

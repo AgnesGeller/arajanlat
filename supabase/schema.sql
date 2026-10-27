@@ -27,6 +27,9 @@ create table if not exists public.quote_price_catalog (
  id uuid primary key default gen_random_uuid(), source text not null default 'Kalkulátor', source_row integer,
  category text not null, subcategory text not null, description text, internal_notes text,
  unit1 text, unit2 text, material_unit numeric(14,2) not null default 0, labor_unit numeric(14,2) not null default 0,
+ comparison_key text, price_variant smallint not null default 1 check(price_variant>0),
+ pricing_required boolean not null default false,
+ calculation_rule jsonb not null default '{"type":"linear"}'::jsonb check(jsonb_typeof(calculation_rule)='object'),
  active boolean not null default true, created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
  unique(source,source_row)
 );
@@ -65,6 +68,7 @@ create table if not exists public.quote_items (
  quantity1 numeric(14,3) not null default 1, unit1 text, quantity2 numeric(14,3), unit2 text,
  material_unit numeric(14,2) not null default 0, labor_unit numeric(14,2) not null default 0,
  other_cost numeric(14,2) not null default 0, vat_rate numeric(5,4) not null default 0 check(vat_rate between 0 and 1),
+ calculation_rule jsonb not null default '{"type":"linear"}'::jsonb check(jsonb_typeof(calculation_rule)='object'),
  internal_note text, public_note text, pricing_required boolean not null default false,
  created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
@@ -145,6 +149,19 @@ begin
 end $$;
 drop trigger if exists quote_protect_item on public.quote_items;
 create trigger quote_protect_item before insert or update or delete on public.quote_items for each row execute function quote_private.protect_item();
+
+create or replace function quote_private.catalog_rule_to_item() returns trigger
+language plpgsql set search_path='' as $$
+begin
+ if new.catalog_id is not null then
+  select c.calculation_rule into new.calculation_rule from public.quote_price_catalog c where c.id=new.catalog_id;
+ end if;
+ return new;
+end $$;
+revoke all on function quote_private.catalog_rule_to_item() from public,anon;
+drop trigger if exists quote_catalog_rule_to_item on public.quote_items;
+create trigger quote_catalog_rule_to_item before insert or update of catalog_id on public.quote_items
+for each row execute function quote_private.catalog_rule_to_item();
 
 do $$ declare t text; begin
  foreach t in array array['quote_staff','quote_projects','quote_price_catalog','quote_price_components','quote_price_breakdown','quote_plants','quote_quotes','quote_versions','quote_items','quote_templates','quote_template_items','quote_timeline','quote_client_requests','quote_received_files','quote_public_tokens'] loop
