@@ -1,0 +1,24 @@
+<!doctype html><html lang="hu"><meta charset="utf-8"><title>Frissítési jelzés ellenőrzése</title><pre id="results"></pre><script type="module">
+const report=document.querySelector('#results');let passed=0,failed=0;
+function check(name,ok){report.textContent+=(ok?'OK: ':'HIBA: ')+name+'\n';ok?passed++:failed++;}
+try{
+ const html=await fetch('../index.html',{cache:'no-store'}).then(r=>r.text());
+ const parsed=new DOMParser().parseFromString(html,'text/html');
+ const banner=parsed.querySelector('#update-banner').outerHTML;
+ for(const width of [1440,1024,768,360,320]){
+  const frame=document.createElement('iframe');frame.style.cssText=`width:${width}px;height:600px;border:0;display:block;max-width:none`;
+  const loaded=new Promise(resolve=>frame.onload=resolve);
+  frame.srcdoc=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="${new URL('../css/app.css?v=48',location.href)}"><div style="position:fixed;bottom:0;left:0;right:0;height:130px;z-index:10;background:#e9e4d6">Alsó vezérlősáv</div>${banner}`;
+  document.body.append(frame);await loaded;
+  const doc=frame.contentDocument,win=frame.contentWindow,notice=doc.querySelector('#update-banner'),button=doc.querySelector('#refresh-app');
+  check(`${width}px: rejtve nem jelenik meg`,win.getComputedStyle(notice).display==='none');
+  notice.hidden=false;await new Promise(requestAnimationFrame);
+  const box=notice.getBoundingClientRect(),target=button.getBoundingClientRect();
+  check(`${width}px: a jelzés és a gomb a képernyőn belül marad`,box.left>=0&&box.right<=width&&box.top>=0&&box.bottom<=600&&target.left>=box.left&&target.right<=box.right);
+  check(`${width}px: legalább 44px magas és kattintható a vezérlősáv előtt`,target.height>=44&&doc.elementFromPoint(target.x+target.width/2,target.y+target.height/2)===button);
+  let clicked=false;button.onclick=()=>clicked=true;button.click();check(`${width}px: a gomb fogadja a kattintást`,clicked);
+  frame.remove();
+ }
+}catch(error){failed++;report.textContent+='HIBA: '+error.stack+'\n';}
+report.textContent+=`EREDMÉNY: ${passed} sikeres, ${failed} hibás.`;report.dataset.failed=failed;
+</script></html>
