@@ -1,5 +1,5 @@
-import { mountQuickQuote } from '../js/modules/quick-quote.js?v=52';
-import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind,quickTotals,editQuickItem,itemIncomplete,publicPdfItems } from '../js/modules/quick-quote-model.js?v=52';
+import { mountQuickQuote } from '../js/modules/quick-quote.js?v=53';
+import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind,quickTotals,editQuickItem,itemIncomplete,publicPdfItems } from '../js/modules/quick-quote-model.js?v=53';
 import { calculateItem,calculateTotal } from '../js/modules/quote-calculator.js?v=47';
 import { catalogDisplayName } from '../js/modules/catalog-label.js?v=47';
 const root=document.querySelector('#quick-view'),report=document.querySelector('#results'),$=s=>root.querySelector(s),records=new Map(),terms=[];
@@ -84,7 +84,8 @@ try{
  $('[data-terms-name]').value='Saját feltételeim';await click('[data-terms-save]');check('Dupla sablonnévnél érthető üzenet és a szöveg megmarad',$('[data-terms-status]').textContent.includes('másik nevet')&&$('[data-field="terms"]').value===terms[0].body);
  await click('[data-step="1"]');await click('[data-step="2"]',()=>!!$('[data-terms-select] option[value="custom:'+terms[0].id+'"]'));input('terms','');chooseTerms('custom:'+terms[0].id);await click('[data-terms-apply]');check('Saját sablon újranyitás után visszatölthető',$('[data-field="terms"]').value===terms[0].body);
  input('terms','PDF-re kerülő végleges feltételek.');await click('[data-step="3"]',()=>!!$('[data-action="download"]'));await wait(()=>!$('[data-action="download"]').disabled);check('Az átírt feltételek az ajánlatba mentődnek',[...records.values()].at(-1).payload.terms==='PDF-re kerülő végleges feltételek.');
- const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js?v=52');
+ const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js?v=53');
+ record.payload.items[0].description='Részletes felmérési leírás megőrzése.';
  const short=await quickQuotePdf(record);check('PDF fájl valódi PDF és ékezetes címmel készül',short.type==='application/pdf'&&(await short.text()).startsWith('%PDF-'));
  const haszon=structuredClone(record);haszon.number='GY-2026-EFF27B6B76F1';haszon.payload.title='Haszonnövény ágyás';haszon.payload.items=[
   {name:'Anyagbeszerzés 1m3',quantity1:1,unit1:'m3',quantity2:null,unit2:'',material_unit:10000,labor_unit:15000,other_cost:0,vat_rate:0,measurement:{mode:'quantity',quantity:1}},

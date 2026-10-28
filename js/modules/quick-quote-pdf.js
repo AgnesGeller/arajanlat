@@ -1,5 +1,5 @@
 import { calculateItem, money } from './quote-calculator.js?v=47';
-import { validateQuickQuote, measurementText, itemIncomplete, quickTotals } from './quick-quote-model.js?v=52';
+import { validateQuickQuote, measurementText, itemIncomplete, quickTotals } from './quick-quote-model.js?v=53';
 
 let resources;
 const base64=buffer=>{let value='';const bytes=new Uint8Array(buffer);for(let i=0;i<bytes.length;i+=8192)value+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(value);};
@@ -46,7 +46,7 @@ export async function quickQuotePdf(record,{draft=false}={}){
  const tableHeader=()=>{ensure(14);doc.setFillColor(237,239,242);doc.rect(16,y-4,178,8,'F');text('Tétel',18,y,9);text('Mennyiség',126,y,8,ink,{align:'right'});text('Nettó egységár',158,y,8,ink,{align:'right'});text('Nettó összeg',192,y,8,ink,{align:'right'});y+=9;};
  tableHeader();let group='';
  for(const item of p.items){
-  const amount=calculateItem(item),pending=itemIncomplete(item);doc.setFontSize(10);const names=doc.splitTextToSize(item.name,78),details=doc.splitTextToSize([item.pending?.quantity?'':measurementText(item),priceDetails(item,amount),item.public_note,!['transport','total'].includes(item.cost_kind)&&item.other_cost?'Egyéb költség összesen: '+money(item.other_cost):''].filter(Boolean).join('\n'),78),height=Math.max(15,names.length*4.6+details.length*4+8);
+  const amount=calculateItem(item),pending=itemIncomplete(item);doc.setFontSize(10);const names=doc.splitTextToSize(item.name,78),details=doc.splitTextToSize([item.pending?.quantity?'':measurementText(item),priceDetails(item,amount),item.description,item.public_note,!['transport','total'].includes(item.cost_kind)&&item.other_cost?'Egyéb költség összesen: '+money(item.other_cost):''].filter(Boolean).join('\n'),78),height=Math.max(15,names.length*4.6+details.length*4+8);
   if(y+height+(item.main_item!==group?10:0)>268){doc.addPage();header();tableHeader();group='';}
   if(item.main_item&&item.main_item!==group){paragraph(item.main_item,11);y+=2;}group=item.main_item||'';
   text(names,18,y,10);const quantity=item.pending?.quantity?'Pontosítandó':`${item.quantity1} ${item.unit1||''}${item.unit2?' × '+item.quantity2+' '+item.unit2:''}`;text(doc.splitTextToSize(quantity,25),126,y,8,ink,{align:'right'});

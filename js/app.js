@@ -1,6 +1,6 @@
 import { mountTermsTemplates } from './modules/terms-templates.js';
-import { mountQuickQuote } from './modules/quick-quote.js?v=52';
-import { quickTotals,publicPdfItems } from './modules/quick-quote-model.js?v=52';
+import { mountQuickQuote } from './modules/quick-quote.js?v=53';
+import { quickTotals,publicPdfItems } from './modules/quick-quote-model.js?v=53';
 import { workflowHtml, versionLabel } from './modules/workflow-ui.js';
 import './modules/app-install.js';
 import { mountCustomerSearch } from './modules/customer-search.js';
@@ -220,8 +220,8 @@ let fullPreviewUrl=null;
 async function previewFullQuote(popup){
  await flushQuoteSave();
  const q=state.quote,p=state.projects.find(p=>p.id===q.project_id),c=state.customers.find(c=>c.id===p?.client_id);
- const {quickQuotePdf}=await import('./modules/quick-quote-pdf.js?v=52');
- const {blankQuickQuote}=await import('./modules/quick-quote-model.js?v=52');
+ const {quickQuotePdf}=await import('./modules/quick-quote-pdf.js?v=53');
+ const {blankQuickQuote}=await import('./modules/quick-quote-model.js?v=53');
  const linkedQuick=(await rows('quote_quick_drafts',x=>x.select('payload').eq('promoted_quote_id',q.id).limit(1)))[0]?.payload;
  const payload={...blankQuickQuote(),...(linkedQuick?.issuer?{issuer:linkedQuick.issuer}:{}),project_code:p?.project_code||'',survey_date:linkedQuick?.survey_date||'',vat_pending:Boolean(linkedQuick?.vat_pending),title:q.title,customer:{name:c?.name||'',email:c?.email||'',phone:c?.phone||''},address:p?.work_address||'',terms:q.terms||'',valid_until:q.valid_until||'',items:publicPdfItems(state.items,linkedQuick?.items)};
  const file=await quickQuotePdf({number:q.number,payload},{draft:true});
@@ -233,7 +233,7 @@ async function previewFullQuote(popup){
 async function publishedPdf(snapshot){
  const popup=window.open('', '_blank');if(popup){popup.opener=null;popup.document.title='Árajánlat PDF';popup.document.body.textContent='PDF készítése…';}
  try{
-  const {publishedQuotePdf}=await import('./modules/quick-quote-pdf.js?v=52');
+  const {publishedQuotePdf}=await import('./modules/quick-quote-pdf.js?v=53');
   const file=await publishedQuotePdf(snapshot);
   if(fullPreviewUrl)URL.revokeObjectURL(fullPreviewUrl);fullPreviewUrl=URL.createObjectURL(file);
   const link=$('#quote-preview-link');if(link){link.href=fullPreviewUrl;link.textContent='Végleges PDF megnyitása';link.hidden=false;}

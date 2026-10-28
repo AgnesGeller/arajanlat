@@ -39,7 +39,7 @@ let offerPdfUrl=null;
 async function clientPdf(snapshot){
  const popup=window.open('', '_blank');if(popup){popup.opener=null;popup.document.title='Árajánlat PDF';popup.document.body.textContent='PDF készítése…';}
  try{
-  const {publishedQuotePdf}=await import('./modules/quick-quote-pdf.js?v=52');const file=await publishedQuotePdf(snapshot);
+  const {publishedQuotePdf}=await import('./modules/quick-quote-pdf.js?v=53');const file=await publishedQuotePdf(snapshot);
   if(offerPdfUrl)URL.revokeObjectURL(offerPdfUrl);offerPdfUrl=URL.createObjectURL(file);
   let link=$('#client-pdf-link');if(!link){link=document.createElement('a');link.id='client-pdf-link';link.target='_blank';link.rel='noopener';$('#print').after(link);}link.href=offerPdfUrl;link.textContent='Árajánlat PDF megnyitása';
   if(popup&&!popup.closed)popup.location.replace(offerPdfUrl);status('A részletes ajánlat PDF-je elkészült.');
