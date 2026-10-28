@@ -1,0 +1,16 @@
+<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>Ügyfél PDF elkülönített ellenőrzése</title><link rel="stylesheet" href="css/app.css?v=48"></head><body><pre id="results"></pre><main><div id="client-status"></div><div id="client-content"></div></main><script type="module">
+const report=document.querySelector('#results');let passed=0,failed=0,opened=false;const calls=[];const check=(name,ok)=>{report.textContent+=(ok?'OK: ':'HIBA: ')+name+'\n';ok?passed++:failed++;};
+const offer={purpose:'offer',pdf_format:2,number:'DK-ELKULONITETT',title:'Kertkarbantartás',version:'A',customer:'Elkülönített ügyfél',work_address:'',date:'2026-10-28',detail_level:'detailed',total:{net:192000,vat:0,gross:192000},issuer:{name:'Díszkertek'},items:[{name:'Tuja kivágása',quantity1:10,unit1:'db',gross:120000},{name:'Tuja elszállítása',quantity1:10,unit1:'db',gross:72000}],pdf_items:[{name:'Tuja kivágása',main_item:'Kertkarbantartás',quantity1:10,unit1:'db',material_unit:0,labor_unit:12000,other_cost:0,vat_rate:0},{name:'Tuja elszállítása',main_item:'Kertkarbantartás',quantity1:10,unit1:'db',material_unit:0,labor_unit:0,other_cost:72000,vat_rate:0,cost_kind:'transport'}]};
+window.supabase={createClient:()=>({rpc:async(name,args)=>{calls.push(name);return {data:name==='quote_public_read'?offer:null,error:null};}})};
+window.open=()=>({opener:null,closed:false,document:{title:'',body:{textContent:''}},location:{replace:()=>opened=true},close:()=>{}});
+async function wait(test){for(let i=0;i<400;i++){if(test())return;await new Promise(r=>setTimeout(r,10));}throw Error('Várakozás sikertelen');}
+try{
+ const html=await (await fetch('client.html')).text();check('Ügyféloldal magyar, helyes HTML- és hivatkozásadatokkal',html.startsWith('<!doctype html>')&&html.includes('lang="hu"')&&html.includes('href="css/app.css"')&&!html.includes('rttps:'));
+ await import('../js/client.js?v=52');await wait(()=>document.querySelector('#identity-form'));
+ check('Az ügyfél azonosítása megmaradt',calls.length===0);const select=document.querySelector('#identity-type');select.value='name';select.dispatchEvent(new Event('change'));document.querySelector('#identity-value').value='Elkülönített ügyfél';document.querySelector('#identity-form').requestSubmit();await wait(()=>document.querySelector('#print'));
+ check('Az ajánlat csak szerveroldali azonosítás után látszik',calls.includes('quote_public_read')&&document.querySelector('#client-content').textContent.includes('Tuja kivágása'));
+ document.querySelector('#print').click();await wait(()=>opened);check('Az ügyfél a részletes végleges PDF-et kapja',document.querySelector('#client-pdf-link').href.startsWith('blob:')&&document.querySelector('#client-status').textContent.includes('PDF-je elkészült'));
+ check('PDF megnyitása nem küld megrendelést vagy emailt',calls.every(name=>name==='quote_public_read'));
+}catch(error){failed++;report.textContent+='HIBA: '+error.stack;}
+report.textContent+=`\nEREDMÉNY: ${passed} sikeres, ${failed} hibás.`;report.dataset.failed=failed;
+</script></body></html>

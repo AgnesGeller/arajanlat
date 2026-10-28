@@ -26,7 +26,7 @@ function check(name,test){if(!test){failed++;report.textContent+='HIBA: '+name+'
 async function waitFor(test){for(let i=0;i<200;i++){if(test())return;await new Promise(r=>setTimeout(r,10));}throw Error('Várakozás sikertelen: '+test);}
 async function click(selector,ready){$(selector).click();if(ready)await waitFor(ready);else await new Promise(r=>setTimeout(r,20));}
 try{
- await import('../js/app.js?v=51');await waitFor(()=>visible('#workspace')&&$('#recent-projects button'));
+ await import('../js/app.js?v=52');await waitFor(()=>visible('#workspace')&&$('#recent-projects button'));
  check('Belépés után a Kezdés oldal nyílik',visible('#start-view')&&!visible('#customers-view')&&$('#nav [aria-current="page"]').dataset.view==='start');
  check('Négy világos lépés látszik',$('.start-steps').children.length===4);check('Kezdőoldal nem lóg ki',document.documentElement.scrollWidth<=window.innerWidth);
  await click('#begin-quote',()=>visible('#customers-view'));check('Új ajánlat a keresőhöz vezet',document.activeElement===$('#customer-search')&&!visible('#customer-detail'));
@@ -36,6 +36,9 @@ try{
  check('Projektnézet nem lóg ki',document.documentElement.scrollWidth<=window.innerWidth);await click('#edit-project',()=>$('#form-dialog').open);check('Projekt alapmezői és további adatai megmaradnak',$('#dialog-form [name="name"]')&&$('#dialog-form [name="work_address"]')&&$('#dialog-form details [name="started_on"]'));await click('#dialog-cancel');
  await click('#request-link',()=>$('#form-dialog').open);check('Adatbekérő továbbra is elérhető',$('#generated-link').value.includes('fixture-only-link'));await click('#dialog-cancel');
  await click('#project-detail [data-quote="quote"]',()=>!!$('#add-item'));check('Ajánlat lépéssorral és saját nézetben nyílik',visible('#quotes-view')&&!visible('#quote-browser')&&$('#quote-detail [aria-current="step"] .step-number').textContent==='3');
+ check('A teljes ajánlat PDF-előnézete véglegesítés előtt is elérhető',!!$('#preview-quote')&&!$('#preview-quote').disabled);
+ const oldOpen=window.open;let fullPreviewOpened=false;window.open=()=>({opener:null,closed:false,document:{title:'',body:{textContent:''}},location:{replace:()=>fullPreviewOpened=true},close:()=>{}});
+ await click('#preview-quote',()=>fullPreviewOpened);window.open=oldOpen;check('A teljes ajánlatból valódi PDF-előnézet készül',!$('#quote-preview-link').hidden&&tables.quote_versions[0].status==='draft');
  check('Az eredeti kalkuláció 3000 Ft nettót ad',$('#quote-detail .summary').textContent.replace(/\s/g,'').includes('Nettó:3000Ft'));
  check('Tételek után következnek a feltételek és a megosztás',!!($('#items-list').compareDocumentPosition($('#terms'))&Node.DOCUMENT_POSITION_FOLLOWING)&&!$('#offer-link').disabled&&$('#print-quote').disabled);
  await click('#add-item',()=>$('#form-dialog').open);check('Árlista és mennyiségek szerkeszthetők',$('#catalog-category')&&$('#catalog-select')&&$('#dialog-form [name="quantity1"]'));await click('#dialog-cancel');
@@ -49,6 +52,8 @@ try{
  // Leave a fresh read-only quote on screen for visual inspection (no real records).
  await click('#nav [data-view="quotes"]',()=>visible('#quote-browser'));await click('#quotes-list [data-quote="quote"]',()=>visible('#quote-detail')&&$('#quote-detail h2')?.textContent==='Első kert');
  await click('#offer-link',()=>$('#form-dialog').open&&tables.quote_versions.find(v=>v.id==='version').status==='published');await waitFor(()=>$('#quote-detail [aria-current="step"] .step-number').textContent==='4');check('Véglegesítés után a megosztás és PDF elérhető',!$('#offer-link').disabled&&!$('#print-quote').disabled&&tables.quote_versions.find(v=>v.id==='version').published_snapshot.total.net===3000);await click('#dialog-cancel');
+ const publicSnapshot=tables.quote_versions.find(v=>v.id==='version').published_snapshot;check('A végleges pillanatkép megőrzi az anyag- és munkadíj-egységárat',publicSnapshot.pdf_format===2&&publicSnapshot.pdf_items[0].material_unit===1000&&publicSnapshot.pdf_items[0].labor_unit===500);
+ window.open=()=>({opener:null,closed:false,document:{title:'',body:{textContent:''}},location:{replace:()=>{}},close:()=>{}});await click('#print-quote',()=>$('#status').textContent.includes('végleges ajánlat PDF-je elkészült'));window.open=oldOpen;check('A végleges részletes PDF megnyitható',!$('#quote-preview-link').hidden&&$('#quote-preview-link').textContent==='Végleges PDF megnyitása');
  await click('#offer-link',()=>$('#form-dialog').open);check('Végleges ajánlat linkje újra elkészíthető',!!$('#generated-link'));await click('#dialog-cancel');
  check('Mobilméreten nincs vízszintes kilógás',document.documentElement.scrollWidth<=window.innerWidth);
  await click('#nav [data-view="quick"]',()=>visible('#quick-view'));check('A gyors ajánlat a belső menüből nyílik',!!document.querySelector('#quick-view [data-action="next"]')&&!visible('#quote-detail'));await click('#nav [data-view="start"]',()=>visible('#start-view'));

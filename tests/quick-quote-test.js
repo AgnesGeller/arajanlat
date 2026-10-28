@@ -1,5 +1,5 @@
-import { mountQuickQuote } from '../js/modules/quick-quote.js?v=51';
-import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind } from '../js/modules/quick-quote-model.js?v=47';
+import { mountQuickQuote } from '../js/modules/quick-quote.js?v=52';
+import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind,quickTotals,editQuickItem,itemIncomplete,publicPdfItems } from '../js/modules/quick-quote-model.js?v=52';
 import { calculateItem,calculateTotal } from '../js/modules/quote-calculator.js?v=47';
 import { catalogDisplayName } from '../js/modules/catalog-label.js?v=47';
 const root=document.querySelector('#quick-view'),report=document.querySelector('#results'),$=s=>root.querySelector(s),records=new Map(),terms=[];
@@ -19,6 +19,20 @@ const rpc=async(name,args)=>{
 };
 const app=mountQuickQuote(root,{data:()=>({listTerms:async()=>structuredClone(terms),saveTerms:async record=>{if(terms.some(t=>t.name===record.name))throw {code:"23505"};const t={...record,id:crypto.randomUUID()};terms.push(t);return structuredClone(t);},customers,projects:[],catalog,templates:[{id:'template',name:'Minta'}],templateItems:async()=>[{catalog_id:'length',position:1}],loadPlants:async()=>[{id:'plant',name:'Talajtakaró tesztnövény',sku:'N-1',sale_net:null,purchase_net:500,sale_price_placeholder:true}],listDrafts:async()=>[...records.values()].slice(0,listLimit??100).map(d=>structuredClone(d)),loadDraft:async id=>structuredClone(records.get(id))}),rpc,onCreateCustomer:async p=>{created++;return {id:'customer',...p.customer};},onPromoted:async()=>{}});
 try{
+ const delivery=measuredItem({name:'Tuja elszállítása',unit1:'db',quantity1:10,quantity2:null,unit2:'',measurement:{mode:'quantity',quantity:10},material_unit:0,labor_unit:0,other_cost:0,vat_rate:0,cost_kind:'transport',charge_unit:7200});
+ check('Elszállítás külön díj: 10 × 7 200 = 72 000 Ft',delivery.other_cost===72000&&delivery.material_unit===0&&delivery.labor_unit===0&&calculateItem(delivery).net===72000);
+ const editedDelivery=editQuickItem(delivery);editedDelivery.measurement.quantity=12;check('Elszállítás mennyiségének szerkesztése újraszámol',measuredItem(editedDelivery).other_cost===86400);
+ const fineDelivery=measuredItem({...delivery,charge_unit:12.34,measurement:{mode:'quantity',quantity:.001}});check('Kis mennyiségnél is megmarad az eredeti fuvar egységár',editQuickItem(fineDelivery).charge_unit===12.34);
+ const fullEdit=editQuickItem({...delivery,labor_unit:100});check('Teljes ajánlatban hozzáadott munkadíj nem vész el',!fullEdit.cost_kind&&measuredItem(fullEdit).labor_unit===100);
+ const publicItems=publicPdfItems([{...delivery,id:'full',name:'Ágyás 1 / Elszállítás',internal_note:'BELSŐ BESZERZÉSI ADAT'}],[{...delivery,full_item_id:'full',main_item:'Ágyás 1',name:'Elszállítás'}]);check('Publikus PDF-adat megőrzi a mérés és a díj típusát, belső megjegyzés nélkül',publicItems[0].main_item==='Ágyás 1'&&publicItems[0].cost_kind==='transport'&&!('internal_note' in publicItems[0]));
+ const unknown=measuredItem({...delivery,cost_kind:'split',other_cost:0,material_unit:1,labor_unit:700,pending:{material:true},measurement:{mode:'area',length:2,width:3}});
+ check('Hiányzó ár nem szerepel valós összegként',quickTotals([delivery,unknown]).net===72000&&quickTotals([delivery,unknown]).pendingCount===1);
+ const unknownQuantity=measuredItem({...delivery,pending:{quantity:true},measurement:{mode:'quantity',quantity:''}});
+ check('Hiányzó mennyiség külön állapot és nem kész ár',unknownQuantity.quantity1===0&&itemIncomplete(unknownQuantity));
+ let missingBlocked=false;try{validateQuickQuote({...blankQuickQuote(),items:[unknownQuantity]});}catch{missingBlocked=true;}check('Hiányzó mennyiség blokkolja a végleges PDF-et',missingBlocked);
+ const blankPrice=measuredItem({...delivery,cost_kind:'split',material_unit:'',other_cost:0});check('Üres ár nem lesz tévesen ingyenes tétel',blankPrice.pending.material&&blankPrice.pricing_required);
+ const uncheckedPlaceholder=measuredItem({...unknown,pending:{material:false}});check('A pipa törlése nem teszi valódi árrá az 1 Ft-os jelzést',uncheckedPlaceholder.pending.material&&uncheckedPlaceholder.pricing_required);
+ const unallocated=measuredItem({...delivery,cost_kind:'total',charge_unit:10000,measurement:{mode:'quantity',quantity:8.71}});check('Bontatlan díj nem válik munkadíjjá',unallocated.other_cost===87100&&unallocated.labor_unit===0);
  check('A lineáris árképzés változatlan',calculateItem({quantity1:2,material_unit:1000,labor_unit:500}).net===3000);
  const spray={type:'tiered',first:25000,middle:17000,middle_count:3,later:12000};
  check('Növényvédelem első tartály ára',calculateItem({quantity1:1,material_unit:25000,labor_unit:0,calculation_rule:spray}).net===25000);
@@ -30,6 +44,7 @@ try{
  check('Eltérő áraknál 1. és 2. forrásjelölés látszik',catalogDisplayName(variants[0],variants).startsWith('1.')&&catalogDisplayName(variants[1],variants).startsWith('2.'));
  check('m, fm, m² és m³ felismerése',unitKind('m')==='length'&&unitKind('fm')==='length'&&unitKind('m²')==='area'&&unitKind('m^3')==='volume');
  check('m² hosszúság × szélesség',measuredQuantity({mode:'area',length:5,width:4})===20);
+ check('Az 1 cm-es ágyástalaj térfogata helyesen kerekül',measuredQuantity({mode:'volume',length:16.5,width:1.5,height:.01})===.248);
  check('m³ hosszúság × szélesség × magasság',measuredQuantity({mode:'volume',length:5,width:4,height:.5})===10);
  check('Hiányos mérésnél használható kézi mennyiség',measuredQuantity({mode:'area',length:5,width:'',quantity:7})===7);
  check('Sövény két végén 21 darab',measuredQuantity({mode:'hedge',length:10,spacing_cm:50,both_ends:true})===21);
@@ -69,7 +84,7 @@ try{
  $('[data-terms-name]').value='Saját feltételeim';await click('[data-terms-save]');check('Dupla sablonnévnél érthető üzenet és a szöveg megmarad',$('[data-terms-status]').textContent.includes('másik nevet')&&$('[data-field="terms"]').value===terms[0].body);
  await click('[data-step="1"]');await click('[data-step="2"]',()=>!!$('[data-terms-select] option[value="custom:'+terms[0].id+'"]'));input('terms','');chooseTerms('custom:'+terms[0].id);await click('[data-terms-apply]');check('Saját sablon újranyitás után visszatölthető',$('[data-field="terms"]').value===terms[0].body);
  input('terms','PDF-re kerülő végleges feltételek.');await click('[data-step="3"]',()=>!!$('[data-action="download"]'));await wait(()=>!$('[data-action="download"]').disabled);check('Az átírt feltételek az ajánlatba mentődnek',[...records.values()].at(-1).payload.terms==='PDF-re kerülő végleges feltételek.');
- const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js?v=47');
+ const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js?v=52');
  const short=await quickQuotePdf(record);check('PDF fájl valódi PDF és ékezetes címmel készül',short.type==='application/pdf'&&(await short.text()).startsWith('%PDF-'));
  const haszon=structuredClone(record);haszon.number='GY-2026-EFF27B6B76F1';haszon.payload.title='Haszonnövény ágyás';haszon.payload.items=[
   {name:'Anyagbeszerzés 1m3',quantity1:1,unit1:'m3',quantity2:null,unit2:'',material_unit:10000,labor_unit:15000,other_cost:0,vat_rate:0,measurement:{mode:'quantity',quantity:1}},
@@ -97,6 +112,23 @@ try{
  input('title','Mentési jelzés helyének ellenőrzése');await wait(()=>$('[data-quick-status]').textContent.includes('Automatikusan mentve'));
  const staticStatus=getComputedStyle($('[data-quick-status]')).position==='static',stableStatus=Math.abs($('[data-quick-status]').getBoundingClientRect().height-emptyStatusHeight)<2&&Math.abs($('[data-field="title"]').getBoundingClientRect().top-fieldTop)<2;
  check('A mentési visszajelzés nem lebeg görgetés közben',staticStatus);check('A mentési üzenet megjelenése nem tolja el a mezőket',stableStatus);
+ await click('[data-action="new"]');input('title','Kertkarbantartás ellenőrzése');await click('[data-step="1"]');
+ await click('[data-action="add-item"]');input('edit.main_item','Ágyás 5');input('edit.name','Geotextília');input('edit.pending.quantity',true);input('edit.material_unit','700');input('edit.labor_unit','700');await click('[data-action="commit-item"]',()=>!$('.quick-editor'));
+ check('A listán a hiányzó mennyiség nem 0 m²-ként látszik',$('.quick-items').textContent.includes('Mennyiség: pontosítandó')&&!$('.quick-items').textContent.includes('0 db'));
+ check('A hiányos lista részösszegként jelenik meg',$('.quick-controls small').textContent==='Ismert tételek részösszege'&&$('[data-quick-total]').textContent==='0 Ft');
+ await click('[data-add-group="Ágyás 5"]');check('Csoporthoz felvett új tétel megőrzi a csoportot',$('[data-field="edit.main_item"]').value==='Ágyás 5');
+ input('edit.name','Elszállítás');input('edit.cost_kind','transport');input('edit.measurement.quantity','10');input('edit.charge_unit','7200');await click('[data-action="commit-item"]',()=>!$('.quick-editor'));
+ const savedDelivery=[...records.values()].at(-1).payload.items[1];check('Elszállítás felületről is külön díjként mentődik',savedDelivery.other_cost===72000&&savedDelivery.cost_kind==='transport'&&savedDelivery.material_unit===0&&savedDelivery.labor_unit===0);
+ const oldOpen=window.open;let previewOpened=0;window.open=()=>({opener:null,closed:false,document:{title:'',body:{textContent:''}},location:{replace:()=>previewOpened++},close:()=>{}});
+ for(const page of [0,1,2,3]){await click(`[data-step="${page}"]`);await click('[data-action="preview-pdf"]',()=>!root.inert&&previewOpened===page+1);check('PDF-előnézet elérhető a(z) '+(page+1)+'. lépésből',$('[data-preview-link]')&&!$('[data-preview-link]').hidden);}
+ await click('[data-step="1"]');await click('[data-action="add-item"]');input('edit.name','Előnézet előtt még nem mentett tétel');input('edit.pending.material',true);await click('[data-action="preview-pdf"]',()=>!root.inert&&previewOpened===5);check('Az előnézet menti a szerkesztett tételt, és folytatható a szerkesztés',!!$('.quick-editor')&&$('[data-field="edit.name"]').value==='Előnézet előtt még nem mentett tétel'&&[...records.values()].at(-1).payload.items.at(-1).name==='Előnézet előtt még nem mentett tétel');
+ window.open=oldOpen;await click('[data-step="3"]');
+ check('Piszkozat mellett a végleges PDF továbbra is tiltott',$('[data-action="download"]').disabled);
+ const draftRecord=structuredClone([...records.values()].at(-1));const draftPdf=await quickQuotePdf(draftRecord,{draft:true});check('Hiányos ajánlatból valódi piszkozat-PDF készül',draftPdf.type==='application/pdf'&&draftPdf.name.endsWith('-piszkozat.pdf'));
+ if(new URLSearchParams(location.search).has('capture'))await fetch('/__quick_pdf__/draft',{method:'POST',body:draftPdf});
+ const shared=[...records.values()].at(-1);shared.payload.title='Másik eszközön javított ajánlat';shared.revision++;await app.open();check('Másik eszköz mentése újratöltődik az aktuális ajánlatba',$('.quick-summary').textContent.includes('Másik eszközön javított ajánlat'));
+ await click('[data-step="1"]');await click('[data-action="add-item"]');input('edit.name','Helyi, még szerkesztett tétel');shared.payload.title='Újabb távoli javítás';shared.revision++;await app.open();check('Távoli frissítés nem írja felül a még szerkesztett tételt',$('[data-field="edit.name"]').value==='Helyi, még szerkesztett tétel');
+ let conflictBlocked=false;try{await app.flushBeforeLeave();}catch{conflictBlocked=true;}check('Két eszköz ütköző mentése nem írja felül egymást',conflictBlocked&&shared.payload.title==='Újabb távoli javítás');app.clear();
  check('Nincs váratlan JavaScript-hiba',errors.length===0);
 }catch(error){failed++;report.textContent+='HIBA: '+error.stack+'\n';}
 report.textContent+=`\nEREDMÉNY: ${passed} sikeres, ${failed} hibás. Nézet: ${window.innerWidth}px.\nKizárólag elkülönített, memóriában tárolt tesztadatok.`;report.dataset.failed=failed;
