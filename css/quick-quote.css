@@ -23,3 +23,5 @@
 .quick-head-actions button{white-space:normal;flex:1 1 130px}
 
 .quick-pdf-actions{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:1rem 0;padding:.8rem 0;border-top:1px solid #ccd1d8}.quick-pdf-actions>span{flex:1 1 100%;font-size:.8rem;font-weight:600}.quick-pdf-actions>button{flex:1 1 150px;min-height:44px;white-space:normal}
+
+.quick-back-pdf{display:flex;gap:.5rem;align-items:center;flex:0 0 auto}.quick-back-pdf>button{min-width:55px;white-space:nowrap}

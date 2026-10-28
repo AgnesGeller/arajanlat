@@ -1,4 +1,4 @@
-import { mountQuickQuote } from '../js/modules/quick-quote.js?v=56';
+import { mountQuickQuote } from '../js/modules/quick-quote.js?v=57';
 import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind,quickTotals,editQuickItem,itemIncomplete,publicPdfItems } from '../js/modules/quick-quote-model.js?v=55';
 import { calculateItem,calculateTotal } from '../js/modules/quote-calculator.js?v=47';
 import { catalogDisplayName } from '../js/modules/catalog-label.js?v=47';
@@ -138,7 +138,8 @@ try{
  const shared=[...records.values()].at(-1);shared.payload.title='Másik eszközön javított ajánlat';shared.revision++;await app.open();check('Másik eszköz mentése újratöltődik az aktuális ajánlatba',$('.quick-summary').textContent.includes('Másik eszközön javított ajánlat'));
  await click('[data-step="1"]');await click('[data-action="add-item"]');input('edit.name','Helyi, még szerkesztett tétel');shared.payload.title='Újabb távoli javítás';shared.revision++;await app.open();check('Távoli frissítés nem írja felül a még szerkesztett tételt',$('[data-field="edit.name"]').value==='Helyi, még szerkesztett tétel');
  let conflictBlocked=false;try{await app.flushBeforeLeave();}catch{conflictBlocked=true;}check('Két eszköz ütköző mentése nem írja felül egymást',conflictBlocked&&shared.payload.title==='Újabb távoli javítás');app.clear();
- check('Az aktuális ajánlat PDF-gombjai alul is elérhetők',!!$('.quick-pdf-actions [data-action="preview-pdf"]')&&!!$('.quick-pdf-actions [data-action="save-draft-pdf"]'));
+ check('Az aktuális ajánlat PDF-gombjai alul is elérhetők',!!$('.quick-controls [data-action="preview-pdf"]')&&!!$('.quick-pdf-actions [data-action="save-draft-pdf"]'));
+ const backRect=$('.quick-back-pdf [data-action="back"]').getBoundingClientRect(),pdfRect=$('.quick-back-pdf [data-action="preview-pdf"]').getBoundingClientRect();check('A PDF a Vissza mellett, a rögzített gombsorban van',Math.abs(backRect.top-pdfRect.top)<2&&pdfRect.left>backRect.left&&getComputedStyle($('.quick-controls')).position==='sticky');
  check('Nincs váratlan JavaScript-hiba',errors.length===0);
 }catch(error){failed++;report.textContent+='HIBA: '+error.stack+'\n';}
 report.textContent+=`\nEREDMÉNY: ${passed} sikeres, ${failed} hibás. Nézet: ${window.innerWidth}px.\nKizárólag elkülönített, memóriában tárolt tesztadatok.`;report.dataset.failed=failed;
