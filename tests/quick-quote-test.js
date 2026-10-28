@@ -1,5 +1,5 @@
-import { mountQuickQuote } from '../js/modules/quick-quote.js?v=53';
-import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind,quickTotals,editQuickItem,itemIncomplete,publicPdfItems } from '../js/modules/quick-quote-model.js?v=53';
+import { mountQuickQuote } from '../js/modules/quick-quote.js?v=54';
+import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind,quickTotals,editQuickItem,itemIncomplete,publicPdfItems } from '../js/modules/quick-quote-model.js?v=54';
 import { calculateItem,calculateTotal } from '../js/modules/quote-calculator.js?v=47';
 import { catalogDisplayName } from '../js/modules/catalog-label.js?v=47';
 const root=document.querySelector('#quick-view'),report=document.querySelector('#results'),$=s=>root.querySelector(s),records=new Map(),terms=[];
@@ -84,7 +84,7 @@ try{
  $('[data-terms-name]').value='Saját feltételeim';await click('[data-terms-save]');check('Dupla sablonnévnél érthető üzenet és a szöveg megmarad',$('[data-terms-status]').textContent.includes('másik nevet')&&$('[data-field="terms"]').value===terms[0].body);
  await click('[data-step="1"]');await click('[data-step="2"]',()=>!!$('[data-terms-select] option[value="custom:'+terms[0].id+'"]'));input('terms','');chooseTerms('custom:'+terms[0].id);await click('[data-terms-apply]');check('Saját sablon újranyitás után visszatölthető',$('[data-field="terms"]').value===terms[0].body);
  input('terms','PDF-re kerülő végleges feltételek.');await click('[data-step="3"]',()=>!!$('[data-action="download"]'));await wait(()=>!$('[data-action="download"]').disabled);check('Az átírt feltételek az ajánlatba mentődnek',[...records.values()].at(-1).payload.terms==='PDF-re kerülő végleges feltételek.');
- const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js?v=53');
+ const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js?v=54');
  record.payload.items[0].description='Részletes felmérési leírás megőrzése.';
  const short=await quickQuotePdf(record);check('PDF fájl valódi PDF és ékezetes címmel készül',short.type==='application/pdf'&&(await short.text()).startsWith('%PDF-'));
  const haszon=structuredClone(record);haszon.number='GY-2026-EFF27B6B76F1';haszon.payload.title='Haszonnövény ágyás';haszon.payload.items=[
@@ -121,7 +121,11 @@ try{
  input('edit.name','Elszállítás');input('edit.cost_kind','transport');input('edit.measurement.quantity','10');input('edit.charge_unit','7200');await click('[data-action="commit-item"]',()=>!$('.quick-editor'));
  const savedDelivery=[...records.values()].at(-1).payload.items[1];check('Elszállítás felületről is külön díjként mentődik',savedDelivery.other_cost===72000&&savedDelivery.cost_kind==='transport'&&savedDelivery.material_unit===0&&savedDelivery.labor_unit===0);
  const oldOpen=window.open;let previewOpened=0;window.open=()=>({opener:null,closed:false,document:{title:'',body:{textContent:''}},location:{replace:()=>previewOpened++},close:()=>{}});
- for(const page of [0,1,2,3]){await click(`[data-step="${page}"]`);await click('[data-action="preview-pdf"]',()=>!root.inert&&previewOpened===page+1);check('PDF-előnézet elérhető a(z) '+(page+1)+'. lépésből',$('[data-preview-link]')&&!$('[data-preview-link]').hidden);}
+ const nativeAnchorClick=HTMLAnchorElement.prototype.click,savedDrafts=[];HTMLAnchorElement.prototype.click=function(){savedDrafts.push(this.download);};
+ for(const page of [0,1,2,3]){await click(`[data-step="${page}"]`);await click('[data-action="preview-pdf"]',()=>!root.inert&&previewOpened===page+1);check('PDF-előnézet elérhető a(z) '+(page+1)+'. lépésből',$('[data-preview-link]')&&!$('[data-preview-link]').hidden);await click('[data-action="save-draft-pdf"]',()=>!root.inert&&savedDrafts.length===page+1);check('Hiányos PDF menthető a(z) '+(page+1)+'. lépésből',savedDrafts.at(-1).endsWith('-piszkozat.pdf'));}
+ HTMLAnchorElement.prototype.click=nativeAnchorClick;
+ check('Az ügyfélnek fizetendő összeg adóátírás nélkül látható',!root.textContent.includes('Nettó')&&!root.textContent.includes('Bruttó')&&!root.textContent.includes('ÁFA'));
+
  await click('[data-step="1"]');await click('[data-action="add-item"]');input('edit.name','Előnézet előtt még nem mentett tétel');input('edit.pending.material',true);await click('[data-action="preview-pdf"]',()=>!root.inert&&previewOpened===5);check('Az előnézet menti a szerkesztett tételt, és folytatható a szerkesztés',!!$('.quick-editor')&&$('[data-field="edit.name"]').value==='Előnézet előtt még nem mentett tétel'&&[...records.values()].at(-1).payload.items.at(-1).name==='Előnézet előtt még nem mentett tétel');
  window.open=oldOpen;await click('[data-step="3"]');
  check('Piszkozat mellett a végleges PDF továbbra is tiltott',$('[data-action="download"]').disabled);

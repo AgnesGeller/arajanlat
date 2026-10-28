@@ -59,7 +59,6 @@ export function validateQuickQuote(payload,forPromotion=false){
  if(payload.items.length>200)throw Error('Egy gyors ajánlat legfeljebb 200 tételt tartalmazhat.');
  payload.items.forEach(measuredItem);
  if(payload.items.some(itemIncomplete))throw Error('Pontosítandó tételek vannak: add meg a hiányzó mennyiségeket és árakat.');
- if(payload.vat_pending)throw Error('Az ÁFA kezelése még pontosítandó. A Feltételek lépésben ellenőrizd.');
  return calculateTotal(payload.items);
 }
 export function itemIncomplete(item){return Boolean(item.pricing_required||Object.values(item.pending||{}).some(Boolean));}
