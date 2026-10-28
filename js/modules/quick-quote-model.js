@@ -1,6 +1,7 @@
+import { DEFAULT_INFORMATION } from './terms-templates.js?v=55';
 import { calculateTotal } from './quote-calculator.js?v=47';
 
-export const blankQuickQuote = () => ({client_id:null, customer:{name:'',email:'',phone:''},address:'',title:'',items:[],terms:'',valid_until:'',issued_on:new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Budapest'}).format(new Date()),issuer:{name:'Díszkertek',address:'',tax_number:'',email:'info@diszkertek.hu',phone:'+36 70 634 9630'}});
+export const blankQuickQuote = () => ({client_id:null, customer:{name:'',email:'',phone:''},address:'',title:'',quote_vat_rate:0,items:[],terms:DEFAULT_INFORMATION,valid_until:'',issued_on:new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Budapest'}).format(new Date()),issuer:{name:'Díszkertek',address:'',tax_number:'',email:'info@diszkertek.hu',phone:'+36 70 634 9630'}});
 const round = (n,places=3) => {const value=Number(n),factor=10**places;return Math.round((value+Number.EPSILON*Math.max(1,Math.abs(value)))*factor)/factor;};
 const number = (v,label) => {const n=Number(String(v??'').replace(',','.'));if(!Number.isFinite(n)||n<0)throw Error(`Ellenőrizd: ${label}.`);return n;};
 const missing=v=>v===null||v===undefined||String(v).trim()==='';
@@ -62,13 +63,14 @@ export function validateQuickQuote(payload,forPromotion=false){
  return calculateTotal(payload.items);
 }
 export function itemIncomplete(item){return Boolean(item.pricing_required||Object.values(item.pending||{}).some(Boolean));}
+export function quoteVatRate(items,fallback=0){const rates=[...new Set(items.map(i=>Number(i.vat_rate||0)))];return rates.length>1?null:rates.length?rates[0]:fallback;}
 export function quickTotals(items){return {...calculateTotal(items.filter(i=>!itemIncomplete(i))),pendingCount:items.filter(itemIncomplete).length};}
 // Only customer-visible fields enter a published snapshot. Never copy internal notes.
 export function publicPdfItems(items,quickItems=[]){return items.map((item,index)=>{
  const linked=quickItems.find(q=>q.full_item_id===item.id||q.id===item.id)||quickItems[index];
  const same=linked&&[linked.main_item,linked.name].filter(Boolean).join(' / ')===item.name;
  const measured=same&&Number(linked.quantity1)===Number(item.quantity1)&&linked.unit1===item.unit1&&Number(linked.quantity2||0)===Number(item.quantity2||0)&&String(linked.unit2||'')===String(item.unit2||'');
- return {name:same?linked.name:item.name,main_item:same?linked.main_item||'':'',description:item.description||'',quantity1:item.quantity1,unit1:item.unit1||'',quantity2:item.quantity2,unit2:item.unit2||'',material_unit:item.material_unit,labor_unit:item.labor_unit,other_cost:item.other_cost||0,vat_rate:item.vat_rate||0,calculation_rule:item.calculation_rule||{type:'linear'},pricing_required:Boolean(item.pricing_required),public_note:item.public_note||'',measurement:measured?linked.measurement:{mode:'quantity',quantity:item.quantity1},...(!Number(item.material_unit)&&!Number(item.labor_unit)&&same&&['transport','total'].includes(linked.cost_kind)?{cost_kind:linked.cost_kind}:{} )};
+ return {name:same?linked.name:item.name,main_item:same?linked.main_item||'':'',description:item.description||'',category:item.category||'',quantity1:item.quantity1,unit1:item.unit1||'',quantity2:item.quantity2,unit2:item.unit2||'',material_unit:item.material_unit,labor_unit:item.labor_unit,other_cost:item.other_cost||0,vat_rate:item.vat_rate||0,calculation_rule:item.calculation_rule||{type:'linear'},pricing_required:Boolean(item.pricing_required),public_note:item.public_note||'',measurement:measured?linked.measurement:{mode:'quantity',quantity:item.quantity1},...(!Number(item.material_unit)&&!Number(item.labor_unit)&&same&&['transport','total'].includes(linked.cost_kind)?{cost_kind:linked.cost_kind}:{} )};
 });}
 export function editQuickItem(item){
  const draft=structuredClone(item);
