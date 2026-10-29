@@ -1,5 +1,5 @@
 import { calculateItem, money } from './quote-calculator.js?v=47';
-import { validateQuickQuote, measurementText, itemIncomplete, quickTotals, quoteVatRate } from './quick-quote-model.js?v=55';
+import { validateQuickQuote, measurementText, itemIncomplete, quickTotals, quoteVatRate } from './quick-quote-model.js?v=58';
 
 let resources;
 const base64=buffer=>{let value='';const bytes=new Uint8Array(buffer);for(let i=0;i<bytes.length;i+=8192)value+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(value);};
@@ -20,7 +20,7 @@ function priceDetails(item,amount){
  const materialPrice=materialPending?'pontosítandó':rule.type==='tiered'?`első egység ${money(rule.first)}, következő ${rule.middle_count||3} egység ${money(rule.middle)} / egység, további ${money(rule.later)} / egység`:rule.type==='fixed_plus_unit'?`${money(rule.unit_price??item.material_unit)} / ${unit} + egyszeri ${money(rule.fixed)}`:money(item.material_unit)+' / '+unit;
  return ['Anyag egységár: '+materialPrice,'Munkadíj egységár: '+(laborPending?'pontosítandó':money(item.labor_unit)+' / '+unit),item.pending?.quantity?'Anyag- és munkadíjösszeg: mennyiségre vár':'Anyag összesen: '+(materialPending?'pontosítandó':money(amount.material))+' · Munkadíj összesen: '+(laborPending?'pontosítandó':money(amount.labor))].join('\n');
 }
-export async function quickQuotePdf(record,{draft=false}={}){
+export async function quickQuotePdf(record,{draft=false,images=[]}={}){
  const p=record.payload;if(!draft)validateQuickQuote(p);
  const {font,logo}=await loadResources(),doc=new window.jspdf.jsPDF({unit:'mm',format:'a4',compress:true,putOnlyUsedFonts:true});
  doc.addFileToVFS('Lato-Regular.ttf',font);doc.addFont('Lato-Regular.ttf','Lato','normal');doc.setFont('Lato');
@@ -84,8 +84,9 @@ export async function quickQuotePdf(record,{draft=false}={}){
  tableHeader();let group='';
  for(const [index,item] of p.items.entries()){
   const amount=calculateItem(item),pending=itemIncomplete(item);doc.setFontSize(10);const names=doc.splitTextToSize(`${index+1}. ${item.name}`,78),details=doc.splitTextToSize([item.pending?.quantity?'':measurementText(item),priceDetails(item,amount),item.description,item.public_note,!['transport','total'].includes(item.cost_kind)&&item.other_cost?'Egyéb költség összesen: '+money(item.other_cost):''].filter(Boolean).join('\n'),78),height=Math.max(15,names.length*4.6+details.length*4+8);
-  if(y+height+(item.main_item!==group?10:0)>268){doc.addPage();header();tableHeader();group='';}
-  if(item.main_item&&item.main_item!==group){paragraph(item.main_item,11);y+=2;}group=item.main_item||'';
+  const groupMeta=(p.groups||[]).find(g=>g.id===item.group_id||g.name===item.main_item),dimensions=groupMeta?[['length','Hossz'],['width','Szélesség'],['height','Vastagság']].filter(([k])=>String(groupMeta[k]??'')!=='').map(([k,label])=>`${label}: ${groupMeta[k]} m`).join(' · '):'';
+  if(y+height+(item.main_item!==group?(dimensions?20:10):0)>268){doc.addPage();header();tableHeader();group='';}
+  if(item.main_item&&item.main_item!==group){paragraph(item.main_item,11);if(dimensions)paragraph(dimensions,8,178,muted);y+=2;}group=item.main_item||'';
   text(names,18,y,10);const quantity=item.pending?.quantity?'Pontosítandó':`${item.quantity1} ${item.unit1||''}${item.unit2?' × '+item.quantity2+' '+item.unit2:''}`;text(doc.splitTextToSize(quantity,25),126,y,8,ink,{align:'right'});
   const unitPrice=['transport','total'].includes(item.cost_kind)?amount.other/(Number(item.quantity1)*(item.unit2?Number(item.quantity2):1)||1):Number(item.material_unit)+Number(item.labor_unit);
   text(pending?'—':['tiered','fixed_plus_unit'].includes(item.calculation_rule?.type)?'Részletezve':money(unitPrice),158,y,8,ink,{align:'right'});text(pending?'Pontosítandó':money(amount.net),192,y,8,pending?red:ink,{align:'right'});
@@ -93,8 +94,19 @@ export async function quickQuotePdf(record,{draft=false}={}){
   y+=height;doc.setDrawColor(217,222,228);doc.setLineWidth(.15);doc.line(16,y-4,194,y-4);
  }
  ensure(14);y+=3;text('Tételes alapösszeg',16,y,10);text(money(total.net),194,y,11,ink,{align:'right'});y+=10;
+ if(images.length){
+  doc.addPage();header();paragraph('Képes melléklet – munkafázisok',14);y+=3;
+  for(const image of images){
+   let properties;try{properties=doc.getImageProperties(image.data);}catch{throw Error('Egy csatolt kép nem építhető a PDF-be. Nyisd meg a képet, vagy vedd ki a PDF-jelölését.');}
+   const width=Math.min(178,properties.width/properties.height*100),height=width*properties.height/properties.width;
+   doc.setFontSize(9);const caption=doc.splitTextToSize(image.caption||'',178);doc.setFontSize(11);const label=`${image.group_name||'Ajánlat'} · ${image.phase||'Munkafázis'}`,labelLines=doc.splitTextToSize(label,178),space=height+13+caption.length*5+labelLines.length*5;
+   ensure(space);paragraph(label,11);
+   doc.addImage(image.data,'JPEG',16,y,width,height,undefined,'FAST');y+=height+5;
+   if(image.caption)paragraph(image.caption,9);y+=8;
+  }
+ }
  const pages=doc.getNumberOfPages();for(let page=1;page<=pages;page++){doc.setPage(page);doc.setDrawColor(180,186,195);doc.line(16,277,194,277);doc.setFontSize(7);const footer=doc.splitTextToSize([issuer.name||'Díszkertek',issuer.email,issuer.phone].filter(Boolean).join(' · '),178);text(footer,16,281,7,muted);const bottom=Math.max(287,282+footer.length*3);text(record.number+(draft?' · PISZKOZAT':''),16,bottom,8,muted);text(`${page} / ${pages} oldal`,194,bottom,8,muted,{align:'right'});}
  return new File([doc.output('arraybuffer')],record.number+(draft?'-piszkozat':'')+'.pdf',{type:'application/pdf'});
 }
 
-export function publishedQuotePdf(snapshot){return quickQuotePdf({number:snapshot.number,payload:{title:snapshot.title,project_code:snapshot.project_code,customer:{name:snapshot.customer,email:snapshot.customer_email||'',phone:snapshot.customer_phone||''},address:snapshot.work_address,terms:snapshot.terms,valid_until:snapshot.valid_until,issued_on:snapshot.date?.slice(0,10),survey_date:snapshot.survey_date,execution_period:snapshot.execution_period,issuer:snapshot.issuer,items:snapshot.pdf_items}});}
+export function publishedQuotePdf(snapshot,options={}){return quickQuotePdf({number:snapshot.number,payload:{title:snapshot.title,project_code:snapshot.project_code,customer:{name:snapshot.customer,email:snapshot.customer_email||'',phone:snapshot.customer_phone||''},address:snapshot.work_address,terms:snapshot.terms,valid_until:snapshot.valid_until,issued_on:snapshot.date?.slice(0,10),survey_date:snapshot.survey_date,execution_period:snapshot.execution_period,issuer:snapshot.issuer,items:snapshot.pdf_items}},options);}

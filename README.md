@@ -2,6 +2,22 @@
 
 Statikus HTML/CSS/vanilla JS alkalmazás a meglévő KAP Supabase projekttel. Az ügyfeleket a saját `quote_clients` táblában kezeli. A Kassza/Munkalap jóváhagyott ügyféllistájának másolata és a korábbi Árajánlat-ügyfelek itt szerepelnek; a másik két alkalmazás kódja, sémája, belépése és jogosultságai változatlanok. A projekt és az ajánlat adatai kizárólag `quote_` táblákban vannak.
 
+## Főtételek, munkasablonok és helyi képek
+
+1. A **Gyors ajánlat → Tételek és felmérés → Új főtétel** gombbal készül például az „Ágyás 3”. Egyszer add meg a hosszúságot, szélességet és szükség esetén a rétegvastagságot, méterben.
+2. A főtételt lenyitva az **Altétel** gombbal válassz Excel szerinti fő- és alkategóriát, vagy írj be egyedi munkát. Az új árlistasor átveszi a megfelelő közös méreteket. A hosszúság nem automatikusan kerület. Az Excel m² × cm sorainál a rétegvastagság centiméterben lesz a második szorzó.
+3. Eltérő mérethez kapcsold ki az átvételt az adott sornál; eltérő vastagsághoz használd a külön jelölést. A kézzel felülírt értékek megmaradnak a főtétel későbbi változtatásakor. Ráhagyást csak kézzel megadott százalékból számolunk. Hiányzó közös méretnél a sor pontosítandó, nem lesz automatikusan 1 egységnyi kész munka.
+4. Az **Árlista és sablonok** külön menüben szerkeszthető az árlista és a fő-/alkategóriák. Itt állítható össze és másolható saját munkasablon is. A sablon az ajánlatban szerkeszthető példány lesz; a korábbi ajánlatok árai nem változnak az árlista szerkesztésétől.
+5. A teljes ajánlatból a **Főtételek és altételek szerkesztése** gomb ugyanebbe a szerkesztőbe vezet. A legfrissebb változatot nyitja meg, a meglévő gyors/teljes kapcsolatot használva. A korábban kiküldött változatok megmaradnak.
+6. A főtétel **Helyi képek és fájlok** részéhez csatolható előtte, látványterv, munkafázis vagy utána kép és képaláírás. A JPG/PNG/WebP képeket az app legfeljebb 1800 pixeles JPEG-re alakítja. Egy fájl legfeljebb 25 MB; egy ajánlathoz legfeljebb 40 helyi fájl tartozhat.
+7. A fájlok kizárólag az adott böngésző/eszköz IndexedDB-tárában maradnak; sem képbájt, sem base64-adat nem kerül az ajánlat RPC-adataiba vagy Supabase Storage-ba. A böngészőadatok törlése a helyi fájlokat is törölheti. A másik eszközön nem jelennek meg automatikusan. A bejelölt képek beépülnek az ezen az eszközön készített PDF-be; ezt a PDF-et kell elküldeni a munkatársnak és az ügyfélnek. Az ügyféllinkből másik eszközön újra készített PDF nem tartalmazza az itt tárolt képeket.
+8. A **PDF** gomb a rögzített alsó gombsorban a Vissza mellett marad, és piszkozatként minden lépésből menthető az aktuális állapot. A képek a tételes rész utáni képes mellékletben jelennek meg.
+9. Az **Adatmentés** menü heti (hétfő–vasárnap), havi, éves vagy egyéni időszakra készít összesítő és tételes CSV-t. Az ajánlat kelte, ennek hiányában létrehozási napja számít. A gyors/teljes ajánlatot nem kettőzi. A ZIP-csomag CSV-t, az adatok és korábbi ajánlatváltozatok JSON-másolatát, valamint az ezen az eszközön elérhető helyi fájlokat tartalmazza. Nem töröl adatot és nem automatikus visszaállítás. Az egymás utáni exportok ugyanazt a betöltött állapotot használják; az **Exportadatok frissítése** újra lekéri az adatokat.
+
+A két új, kizárólag `quote_` adatokkal dolgozó adatbázis-segédfunkció forrása: `supabase/quote_group_editor.sql`. Mindkettő security invoker módban fut, a meglévő RLS-t és belső hozzáférést használja; névtelenül nem hívható. Nincs új Auth, tárolóbucket vagy más alkalmazáshoz tartozó módosítás.
+
+Az új elkülönített böngészős ellenőrzés: `tests/quote-groups.html`; mobil/tablet: `tests/quote-groups-responsive.html?width=390` vagy `?width=768`. Ezek csak helyi, elkülönített próbaadatokkal dolgoznak.
+
 ## Az Excel jelenlegi működése (15 sor)
 
 1. A `Kalkulátor` lap sorai a főkategóriát és alkategóriát választják ki.
