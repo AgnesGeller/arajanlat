@@ -1,0 +1,30 @@
+<!doctype html><html lang="hu"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Meglévő árlista ellenőrzése</title><link rel="stylesheet" href="../css/app.css?v=48"><link rel="stylesheet" href="../css/quick-quote.css?v=62"><style>pre{white-space:pre-wrap;overflow-wrap:anywhere}iframe{display:block;border:0;margin:auto;max-width:100%}</style><body><pre id="results">Ellenőrzés…</pre><main class="container" id="library-view"></main><script type="module">
+import { mountQuoteLibrary } from '../js/modules/quote-library.js?v=63';
+const params=new URLSearchParams(location.search),report=document.querySelector('#results');
+if(params.has('width')){document.querySelector('main').remove();const frame=document.createElement('iframe');frame.title='Árlista reszponzív próbája';frame.style.width=Number(params.get('width'))+'px';frame.style.height='1000px';frame.src='quote-library.html';document.body.append(frame);const timer=setInterval(()=>{const r=frame.contentDocument?.querySelector('#results');if(r?.dataset.failed!==undefined){report.textContent=r.textContent;clearInterval(timer);}},100);}
+else{
+const root=document.querySelector('main'),catalog=Array.from({length:210},(_,n)=>({id:'c'+n,category:n%2?'Füvesítés':'Talajtakarás',subcategory:'Tétel '+String(n+1).padStart(3,'0'),unit1:'m²',unit2:'',material_unit:700+n,labor_unit:850+n,calculation_rule:{type:'linear'}}));let passed=0,failed=0,saved,reads=0;
+const check=(name,ok)=>{report.textContent+=(ok?'OK: ':'HIBA: ')+name+'\n';ok?passed++:failed++;};report.textContent='';
+const app=mountQuoteLibrary(root,{data:()=>{reads++;return {catalog,templates:[]};},saveCatalog:async v=>{saved=v;},renameCategory:async()=>{},saveTemplate:async()=>{},deleteTemplate:async()=>{},templateItems:async()=>[],onChanged:async()=>{}});
+const input=value=>{const el=root.querySelector('[data-library-search]');el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));};
+try{
+check('A lista alaphelyzetben becsukható lenyíló',!root.querySelector('[data-library-list]').open);
+root.querySelector('[data-library-list]>summary').click();check('Üres keresővel lenyitható mind a 210 tétel',root.querySelector('[data-library-list]').open&&root.querySelectorAll('[data-library-edit]').length===210);
+check('A 210. sor sincs levágva 80 találatnál',!!root.querySelector('[data-library-edit="c209"]'));
+input('f');check('Egyetlen betűre is szűr, két betű nélkül',root.querySelectorAll('[data-library-edit]').length===105);
+input('Tétel 210');check('A név szerinti keresés működik',root.querySelectorAll('[data-library-edit]').length===1);
+input('');check('Keresés törlése visszaadja az összes tételt',root.querySelectorAll('[data-library-edit]').length===210);
+input('   ');check('Csak szóköz esetén is teljes a lista',root.querySelectorAll('[data-library-edit]').length===210);
+root.querySelector('[data-library-edit="c209"]').click();check('Kiválasztás után automatikusan becsukódik',!root.querySelector('[data-library-list]').open);
+check('A kiválasztott sor eredeti adatai betöltődnek',root.querySelector('[name="subcategory"]').value==='Tétel 210'&&root.querySelector('[name="material_unit"]').value==='909');
+root.querySelector('[data-library-list]>summary').click();check('Kiválasztás után újra lenyitható a teljes lista',root.querySelector('[data-library-list]').open&&root.querySelectorAll('[data-library-edit]').length===210);
+root.querySelector('[data-catalog-form]').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));for(let n=0;root.inert&&n<100;n++)await new Promise(r=>setTimeout(r,10));
+check('A szerkesztett árlistatétel továbbra is menthető',saved?.id==='c209'&&saved.material_unit===909&&saved.labor_unit===1059&&saved.calculation_rule.type==='linear');
+check('Mentés után is becsukott marad a lista',!root.querySelector('[data-library-list]').open);
+root.querySelector('[data-library-list]>summary').click();input('nincs-ilyen-talalat');check('Érthető üzenet van találat nélkül',root.querySelector('[data-library-results]').textContent.includes('Nincs találat.'));
+input('');check('A teljes lista saját területén görgethető',getComputedStyle(root.querySelector('[data-library-results]')).overflowY==='auto');
+check('A teljes árlista nem lóg ki vízszintesen',document.documentElement.scrollWidth<=window.innerWidth+1);
+}catch(e){failed++;report.textContent+='HIBA: '+e.stack+'\n';}
+report.textContent+=`EREDMÉNY: ${passed} sikeres, ${failed} hibás. Nézet: ${window.innerWidth}px.`;report.dataset.failed=failed;
+}
+</script></body></html>

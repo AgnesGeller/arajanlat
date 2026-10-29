@@ -4,7 +4,7 @@ import { normalizeGroups,inheritGroup,updateGroup,groupDimensions,publicPdfGroup
 import { listLocalFiles,addLocalFile,deleteLocalFile,pdfLocalImages,saveLocalFile } from '../js/modules/quote-local-files.js?v=61';
 import { quickQuotePdf } from '../js/modules/quick-quote-pdf.js?v=60';
 import { exportRows,periodRange,makeZip,mountQuoteExport } from '../js/modules/quote-export.js?v=61';
-import { mountQuoteLibrary } from '../js/modules/quote-library.js?v=58';
+import { mountQuoteLibrary } from '../js/modules/quote-library.js?v=63';
 const root=document.querySelector('#quick-view'),report=document.querySelector('#results'),records=new Map();let passed=0,failed=0,fixtureId,backCount=0,clientCalls=0,termsReads=0;const compactMode=new URLSearchParams(location.search).has('compact');
 const check=(label,condition)=>{report.textContent+=(condition?'OK: ':'HIBA: ')+label+'\n';condition?passed++:failed++;};
 const wait=async(fn)=>{for(let n=0;n<300;n++){if(fn())return;await new Promise(r=>setTimeout(r,20));}throw Error('Időtúllépés: '+fn);};

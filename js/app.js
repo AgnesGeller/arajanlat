@@ -1,6 +1,6 @@
 import { publicPdfGroups } from './modules/quote-groups.js?v=60';
 import { createQuoteNavigation } from './modules/quote-navigation.js?v=59';
-import { mountQuoteLibrary } from './modules/quote-library.js?v=58';
+import { mountQuoteLibrary } from './modules/quote-library.js?v=63';
 import { mountQuoteExport } from './modules/quote-export.js?v=61';
 import { pdfLocalImages } from './modules/quote-local-files.js?v=61';
 import { mountTermsTemplates,DEFAULT_INFORMATION } from './modules/terms-templates.js?v=55';
