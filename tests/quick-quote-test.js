@@ -1,4 +1,4 @@
-import { mountQuickQuote } from '../js/modules/quick-quote.js?v=59';
+import { mountQuickQuote } from '../js/modules/quick-quote.js?v=60';
 import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind,quickTotals,editQuickItem,itemIncomplete,publicPdfItems } from '../js/modules/quick-quote-model.js?v=58';
 import { calculateItem,calculateTotal } from '../js/modules/quote-calculator.js?v=47';
 import { catalogDisplayName } from '../js/modules/catalog-label.js?v=47';
@@ -87,7 +87,7 @@ try{
  await click('[data-step="1"]');await click('[data-step="2"]',()=>!!$('[data-terms-select] option[value="custom:'+terms[0].id+'"]'));input('terms','');chooseTerms('custom:'+terms[0].id);await click('[data-terms-apply]');check('Saját sablon újranyitás után visszatölthető',$('[data-field="terms"]').value===terms[0].body);
  chooseTerms('builtin:reference-lawn');await click('[data-terms-append]');check('Fontos információk a meglévő szöveghez fűzhetők',$('[data-field="terms"]').value.includes(terms[0].body)&&$('[data-field="terms"]').value.includes('A gyep a nyári'));const appended=$('[data-field="terms"]').value;await click('[data-terms-append]');check('A sablon hozzáfűzése nem kettőzi a szöveget',$('[data-field="terms"]').value===appended);
  input('terms','PDF-re kerülő végleges feltételek.');await click('[data-step="3"]',()=>!!$('[data-action="download"]'));await wait(()=>!$('[data-action="download"]').disabled);check('Az átírt feltételek az ajánlatba mentődnek',[...records.values()].at(-1).payload.terms==='PDF-re kerülő végleges feltételek.');
- const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js?v=58');
+ const record=structuredClone([...records.values()].at(-1)),{quickQuotePdf}=await import('../js/modules/quick-quote-pdf.js?v=60');
  record.payload.items[0].description='Részletes felmérési leírás megőrzése.';
  const short=await quickQuotePdf(record);check('PDF fájl valódi PDF és ékezetes címmel készül',short.type==='application/pdf'&&(await short.text()).startsWith('%PDF-'));
  const haszon=structuredClone(record);haszon.number='GY-2026-EFF27B6B76F1';haszon.payload.title='Haszonnövény ágyás';haszon.payload.items=[

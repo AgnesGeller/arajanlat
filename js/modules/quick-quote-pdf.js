@@ -1,3 +1,4 @@
+import { groupDimensions } from './quote-groups.js?v=60';
 import { calculateItem, money } from './quote-calculator.js?v=47';
 import { validateQuickQuote, measurementText, itemIncomplete, quickTotals, quoteVatRate } from './quick-quote-model.js?v=58';
 
@@ -84,7 +85,7 @@ export async function quickQuotePdf(record,{draft=false,images=[]}={}){
  tableHeader();let group='';
  for(const [index,item] of p.items.entries()){
   const amount=calculateItem(item),pending=itemIncomplete(item);doc.setFontSize(10);const names=doc.splitTextToSize(`${index+1}. ${item.name}`,78),details=doc.splitTextToSize([item.pending?.quantity?'':measurementText(item),priceDetails(item,amount),item.description,item.public_note,!['transport','total'].includes(item.cost_kind)&&item.other_cost?'Egyéb költség összesen: '+money(item.other_cost):''].filter(Boolean).join('\n'),78),height=Math.max(15,names.length*4.6+details.length*4+8);
-  const groupMeta=(p.groups||[]).find(g=>g.id===item.group_id||g.name===item.main_item),dimensions=groupMeta?[['length','Hossz'],['width','Szélesség'],['height','Vastagság']].filter(([k])=>String(groupMeta[k]??'')!=='').map(([k,label])=>`${label}: ${groupMeta[k]} m`).join(' · '):'';
+  const groupMeta=(p.groups||[]).find(g=>g.id===item.group_id||g.name===item.main_item),dimensions=groupMeta?groupDimensions(groupMeta):'';
   if(y+height+(item.main_item!==group?(dimensions?20:10):0)>268){doc.addPage();header();tableHeader();group='';}
   if(item.main_item&&item.main_item!==group){paragraph(item.main_item,11);if(dimensions)paragraph(dimensions,8,178,muted);y+=2;}group=item.main_item||'';
   text(names,18,y,10);const quantity=item.pending?.quantity?'Pontosítandó':`${item.quantity1} ${item.unit1||''}${item.unit2?' × '+item.quantity2+' '+item.unit2:''}`;text(doc.splitTextToSize(quantity,25),126,y,8,ink,{align:'right'});
@@ -109,4 +110,4 @@ export async function quickQuotePdf(record,{draft=false,images=[]}={}){
  return new File([doc.output('arraybuffer')],record.number+(draft?'-piszkozat':'')+'.pdf',{type:'application/pdf'});
 }
 
-export function publishedQuotePdf(snapshot,options={}){return quickQuotePdf({number:snapshot.number,payload:{title:snapshot.title,project_code:snapshot.project_code,customer:{name:snapshot.customer,email:snapshot.customer_email||'',phone:snapshot.customer_phone||''},address:snapshot.work_address,terms:snapshot.terms,valid_until:snapshot.valid_until,issued_on:snapshot.date?.slice(0,10),survey_date:snapshot.survey_date,execution_period:snapshot.execution_period,issuer:snapshot.issuer,items:snapshot.pdf_items}},options);}
+export function publishedQuotePdf(snapshot,options={}){return quickQuotePdf({number:snapshot.number,payload:{title:snapshot.title,project_code:snapshot.project_code,customer:{name:snapshot.customer,email:snapshot.customer_email||'',phone:snapshot.customer_phone||''},address:snapshot.work_address,terms:snapshot.terms,valid_until:snapshot.valid_until,issued_on:snapshot.date?.slice(0,10),survey_date:snapshot.survey_date,execution_period:snapshot.execution_period,issuer:snapshot.issuer,groups:snapshot.pdf_groups||[],items:snapshot.pdf_items}},options);}
