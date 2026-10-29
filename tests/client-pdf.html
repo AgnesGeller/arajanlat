@@ -6,7 +6,7 @@ window.open=()=>({opener:null,closed:false,document:{title:'',body:{textContent:
 async function wait(test){for(let i=0;i<400;i++){if(test())return;await new Promise(r=>setTimeout(r,10));}throw Error('Várakozás sikertelen');}
 try{
  const html=await (await fetch('client.html')).text();check('Ügyféloldal magyar, helyes HTML- és hivatkozásadatokkal',html.startsWith('<!doctype html>')&&html.includes('lang="hu"')&&html.includes('href="css/app.css"')&&!html.includes('rttps:'));
- await import('../js/client.js?v=60');await wait(()=>document.querySelector('#identity-form'));
+ await import('../js/client.js?v=61');await wait(()=>document.querySelector('#identity-form'));
  check('Az ügyfél azonosítása megmaradt',calls.length===0);const select=document.querySelector('#identity-type');select.value='name';select.dispatchEvent(new Event('change'));document.querySelector('#identity-value').value='Elkülönített ügyfél';document.querySelector('#identity-form').requestSubmit();await wait(()=>document.querySelector('#print'));
  check('Az ajánlat csak szerveroldali azonosítás után látszik',calls.includes('quote_public_read')&&document.querySelector('#client-content').textContent.includes('Tuja kivágása'));
  document.querySelector('#print').click();await wait(()=>opened);check('Az ügyfél a részletes végleges PDF-et kapja',document.querySelector('#client-pdf-link').href.startsWith('blob:')&&document.querySelector('#client-status').textContent.includes('PDF-je elkészült'));

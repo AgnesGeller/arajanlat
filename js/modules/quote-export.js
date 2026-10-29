@@ -1,6 +1,6 @@
 import { quickTotals, itemIncomplete } from './quick-quote-model.js?v=58';
 import { calculateItem } from './quote-calculator.js?v=47';
-import { listLocalFiles } from './quote-local-files.js?v=58';
+import { listLocalFiles } from './quote-local-files.js?v=61';
 const iso=d=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Budapest'}).format(d);
 export function periodRange(kind,date=iso(new Date())){
  const d=new Date(date+'T12:00:00Z');if(!Number.isFinite(d.getTime()))throw Error('Válassz érvényes dátumot.');let start=new Date(d),end=new Date(d);

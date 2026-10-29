@@ -2,7 +2,7 @@
 let database;
 const open=()=>database??=new Promise((resolve,reject)=>{const request=indexedDB.open('diszkertek-arajanlat-files',1);request.onupgradeneeded=()=>{const store=request.result.createObjectStore('attachments',{keyPath:'id'});store.createIndex('quote','quote_id');};request.onsuccess=()=>resolve(request.result);request.onerror=()=>{database=null;reject(Error('A helyi fájltár nem nyitható meg. Engedélyezd a böngésző tárhelyhasználatát.'));};});
 async function transaction(mode,work){const db=await open();return new Promise((resolve,reject)=>{const tx=db.transaction('attachments',mode),request=work(tx.objectStore('attachments'));let result;request.onsuccess=()=>{result=request.result;};tx.oncomplete=()=>resolve(result);tx.onerror=tx.onabort=()=>reject(Error('A helyi fájl mentése nem sikerült. Ellenőrizd az eszköz szabad tárhelyét.'));});}
-export const listLocalFiles=quoteId=>transaction('readonly',s=>quoteId?s.index('quote').getAll(quoteId):s.getAll());
+export const listLocalFiles=async quoteId=>(await transaction('readonly',s=>quoteId?s.index('quote').getAll(quoteId):s.getAll())).sort((a,b)=>String(a.created_at||'').localeCompare(String(b.created_at||''))||String(a.id).localeCompare(String(b.id)));
 export const deleteLocalFile=id=>transaction('readwrite',s=>s.delete(id));
 export const saveLocalFile=record=>transaction('readwrite',s=>s.put(record));
 export async function addLocalFile(quoteId,groupId,file){
