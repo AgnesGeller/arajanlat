@@ -4,7 +4,7 @@ Statikus HTML/CSS/vanilla JS alkalmazás a meglévő KAP Supabase projekttel. Az
 
 ## Főtételek, munkasablonok és helyi képek
 
-1. A **Gyors ajánlat → Tételek és felmérés → Új főtétel** gombbal készül például az „Ágyás 3”. Egyszer add meg a hosszúságot, szélességet és szükség esetén a rétegvastagságot, méterben.
+1. A **Gyors ajánlat → Főtételek, munkák és képek → Új főtétel** gombbal készül például az „Ágyás 3”. Egyszer add meg a hosszúságot, szélességet és szükség esetén a rétegvastagságot, méterben.
 2. A főtételt lenyitva az **Altétel** gombbal válassz Excel szerinti fő- és alkategóriát, vagy írj be egyedi munkát. Az új árlistasor átveszi a megfelelő közös méreteket. A hosszúság nem automatikusan kerület. Az Excel m² × cm sorainál a rétegvastagság centiméterben lesz a második szorzó.
 3. Eltérő mérethez kapcsold ki az átvételt az adott sornál; eltérő vastagsághoz használd a külön jelölést. A kézzel felülírt értékek megmaradnak a főtétel későbbi változtatásakor. Ráhagyást csak kézzel megadott százalékból számolunk. Hiányzó közös méretnél a sor pontosítandó, nem lesz automatikusan 1 egységnyi kész munka.
 4. Az **Árlista és sablonok** külön menüben szerkeszthető az árlista és a fő-/alkategóriák. Itt állítható össze és másolható saját munkasablon is. A sablon az ajánlatban szerkeszthető példány lesz; a korábbi ajánlatok árai nem változnak az árlista szerkesztésétől.
@@ -17,6 +17,16 @@ Statikus HTML/CSS/vanilla JS alkalmazás a meglévő KAP Supabase projekttel. Az
 A két új, kizárólag `quote_` adatokkal dolgozó adatbázis-segédfunkció forrása: `supabase/quote_group_editor.sql`. Mindkettő security invoker módban fut, a meglévő RLS-t és belső hozzáférést használja; névtelenül nem hívható. Nincs új Auth, tárolóbucket vagy más alkalmazáshoz tartozó módosítás.
 
 Az új elkülönített böngészős ellenőrzés: `tests/quote-groups.html`; mobil/tablet: `tests/quote-groups-responsive.html?width=390` vagy `?width=768`. Ezek csak helyi, elkülönített próbaadatokkal dolgoznak.
+
+## Helyszíni gyorsajánlat és visszalépés
+
+A **Gyors ajánlat** menü egyetlen oldalas helyszíni szerkesztőt nyit. Az ajánlat megnevezése és a főtételek közvetlenül szerkeszthetők; az ügyféladatok, a fontos információk és a PDF-rész külön lenyithatók. Nincs időpontfoglalás, adatbekérő vagy kötelező projektindítás. Az árlista, munkasablonok, méretöröklés, munkadíj és képes PDF ugyanazokat a meglévő modulokat használja. A teljes ajánlatból megnyitott szerkesztőben a korábbi lépéses nézet is megmarad.
+
+A képek itt is a főtétel **Helyi képek és fájlok** részén csatolhatók. A **Fotó készítése** mező a támogató mobilokon a hátlapi kamerát ajánlja fel; asztali böngészőben fájlválasztóként is működhet. A feldolgozott JPEG-kép külön mentése `.jpg` kiterjesztést kap. A PDF megnyitása és elkészítése előbb menti a még szerkesztett tételt is; a korábbi PDF nem küldhető ki észrevétlenül az újonnan beírt sor nélkül.
+
+Minden belső oldalon van rögzített **Vissza** gomb és az aktuális oldal megnevezése. A gyorsnézet első oldaláról is vissza lehet térni. A böngésző Vissza/Előre az aktuális appmunkamenet saját előzményeit kezeli: ügyfél, projekt, ajánlatváltozat, gyorspiszkozat, szerkesztési nézet és görgetési hely. Navigálás előtt megvárja a mentést és a helyi fájlműveletet; sikertelen mentésnél az oldal és az adatok megmaradnak. A fejléc logója is mentéssel vezet a Kezdés oldalra. Az előzmény csak navigációs azonosítókat tárol a böngésző saját előzményeiben; nem kerül üzleti adat localStorage-ba. Más alkalmazás előzményeit nem kezeli.
+
+Elkülönített ellenőrzések: `tests/quote-navigation.html`, illetve `tests/quote-groups.html?compact`. Mobil/tablet: `tests/quote-groups-responsive.html?width=390&height=844&compact` vagy `?width=768&height=1024&compact`.
 
 ## Az Excel jelenlegi működése (15 sor)
 

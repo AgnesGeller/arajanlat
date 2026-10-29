@@ -1,4 +1,4 @@
-import { mountQuickQuote } from '../js/modules/quick-quote.js?v=58';
+import { mountQuickQuote } from '../js/modules/quick-quote.js?v=59';
 import { measuredQuantity,measuredItem,validateQuickQuote,blankQuickQuote,unitKind,quickTotals,editQuickItem,itemIncomplete,publicPdfItems } from '../js/modules/quick-quote-model.js?v=58';
 import { calculateItem,calculateTotal } from '../js/modules/quote-calculator.js?v=47';
 import { catalogDisplayName } from '../js/modules/catalog-label.js?v=47';
