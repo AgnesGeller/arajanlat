@@ -4,7 +4,7 @@ import { mountQuoteLibrary } from './modules/quote-library.js?v=58';
 import { mountQuoteExport } from './modules/quote-export.js?v=61';
 import { pdfLocalImages } from './modules/quote-local-files.js?v=61';
 import { mountTermsTemplates,DEFAULT_INFORMATION } from './modules/terms-templates.js?v=55';
-import { mountQuickQuote } from './modules/quick-quote.js?v=61';
+import { mountQuickQuote } from './modules/quick-quote.js?v=62';
 import { quickTotals,publicPdfItems,quoteVatRate } from './modules/quick-quote-model.js?v=58';
 import { workflowHtml, versionLabel } from './modules/workflow-ui.js';
 import './modules/app-install.js';
